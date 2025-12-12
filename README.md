@@ -115,12 +115,24 @@ cargo check
 ### Database Migrations
 
 ```bash
-# Install sqlx-cli
-cargo install sqlx-cli --no-default-features --features postgres
+# Option 1: Using Docker (Recommended)
+docker exec -i uaip-postgres psql -U uaip -d uaip < migrations/001_initial_schema.sql
+docker exec -i uaip-postgres psql -U uaip -d uaip < migrations/002_rbac_tables.sql
 
-# Run migrations
+# Option 2: Using psql directly
+psql -U uaip -d uaip -f migrations/001_initial_schema.sql
+psql -U uaip -d uaip -f migrations/002_rbac_tables.sql
+
+# Option 3: Using sqlx-cli
+cargo install sqlx-cli --no-default-features --features postgres
 sqlx migrate run --database-url postgresql://uaip:uaip_password_dev@localhost:5432/uaip
+
+# Verify migrations
+docker exec -it uaip-postgres psql -U uaip -d uaip -c "\dt"
+docker exec -it uaip-postgres psql -U uaip -d uaip -c "SELECT name FROM roles;"
 ```
+
+See [migrations/README.md](migrations/README.md) for detailed documentation.
 
 ## Configuration
 
@@ -133,30 +145,67 @@ Priority: Environment variables > .env > default.toml
 
 ## Project Status
 
-### ✅ Milestone 1.1: Scaffold Projet (Week 1) - COMPLETED
+### ✅ Milestone 1.1: Project Scaffold (Week 1) - COMPLETED
 
 - [x] Initialize git repository
 - [x] Create Cargo workspace structure (8 crates)
-- [x] Implement `uaip-core`: message types, device types, error types
+- [x] Implement `uaip-core`: message types, device types, error types (10 tests)
 - [x] Docker Compose (PostgreSQL, Redis, NATS)
 - [x] Configuration files (.env.example, default.toml)
 
-### 🚧 Milestone 1.2: Service Authentification (Week 2) - TODO
+**Tests:** 10/10 passing ✅
 
-- [ ] JWT generation/validation
-- [ ] X.509 certificate parsing
-- [ ] Challenge-response authentication
-- [ ] RBAC implementation
-- [ ] Database models for auth
+### ✅ Milestone 1.2: Authentication Service (Week 2) - COMPLETED
+
+- [x] JWT generation/validation with OAuth 2.0 (8 tests)
+- [x] X.509 certificate parsing and validation (5 tests)
+- [x] Challenge-response authentication flow
+- [x] RBAC implementation with 5 default roles (11 tests)
+- [x] Database schema and migrations (10 tables, 3 functions, 1 trigger)
+
+**Tests:** 24/24 passing ✅
+**Database:** 10 tables, 5 roles, 12 permissions configured
+
+**Features:**
+- OAuth 2.0 client_credentials flow for AI agents
+- X.509 certificate-based device authentication
+- Role-based access control (admin, device_manager, device_operator, monitor, ai_agent)
+- Certificate revocation list (CRL)
+- Token refresh mechanism
+- Wildcard permission matching (*:*)
+- PostgreSQL stored functions for permission checking
+
+### 🚧 Milestone 1.3: Device Registry (Week 3) - IN PROGRESS
+
+- [ ] PostgreSQL device repository
+- [ ] Device CRUD operations
+- [ ] Device registration workflow (3-step challenge)
+- [ ] Device status tracking (online/offline/error)
+- [ ] Capability storage and querying
+- [ ] Redis caching for device states
 
 ### 📋 Upcoming Milestones
 
-- Milestone 1.3: Device Registry (Week 3)
 - Milestone 1.4: Message Router (Week 4)
 - Milestone 1.5: REST API (Week 5)
 - Milestone 1.6: WebSocket API (Week 6)
 
-See the [implementation plan](../.claude/plans/polished-tumbling-bumblebee.md) for complete roadmap.
+See the [implementation plan](.claude/plans/polished-tumbling-bumblebee.md) for complete roadmap.
+
+### 📊 Overall Progress
+
+**Phase 1 - Foundation & MVP:** 33% complete (2/6 milestones)
+
+| Component | Status | Tests |
+|-----------|--------|-------|
+| Core Types | ✅ Complete | 10/10 |
+| Authentication | ✅ Complete | 24/24 |
+| Device Registry | 🚧 In Progress | 0/? |
+| Message Router | ⏳ Pending | 0/? |
+| REST API | ⏳ Pending | 0/? |
+| WebSocket API | ⏳ Pending | 0/? |
+
+**Total Tests:** 34/34 passing ✅
 
 ## API Documentation
 
