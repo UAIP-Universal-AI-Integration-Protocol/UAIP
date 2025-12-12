@@ -2,6 +2,7 @@
 //!
 //! This crate manages device registration, discovery, and state tracking.
 
+pub mod cache;
 pub mod capability;
 pub mod discovery;
 pub mod heartbeat;

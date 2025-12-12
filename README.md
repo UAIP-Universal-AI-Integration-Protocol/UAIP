@@ -179,14 +179,23 @@ Priority: Environment variables > .env > default.toml
 - Wildcard permission matching (*:*)
 - PostgreSQL stored functions for permission checking
 
-### 🚧 Milestone 1.3: Device Registry (Week 3) - IN PROGRESS
+### ✅ Milestone 1.3: Device Registry (Week 3) - COMPLETED
 
 - [x] PostgreSQL device repository
 - [x] Device CRUD operations
 - [x] Device registration workflow (3-step challenge)
 - [x] Device status tracking (online/offline/error)
 - [x] Capability storage and querying
-- [ ] Redis caching for device states
+- [x] Redis caching for device states
+
+**Tests:** 17/17 passing ✅
+**Features:**
+- Full device CRUD with PostgreSQL
+- 3-step challenge-response registration
+- Heartbeat monitoring and auto-offline detection
+- Capability querying by name, type, and action
+- Redis caching for devices and statuses
+- Configurable TTL and cache invalidation
 
 ### 📋 Upcoming Milestones
 
@@ -198,18 +207,18 @@ See the [implementation plan](.claude/plans/polished-tumbling-bumblebee.md) for 
 
 ### 📊 Overall Progress
 
-**Phase 1 - Foundation & MVP:** 33% complete (2/6 milestones)
+**Phase 1 - Foundation & MVP:** 50% complete (3/6 milestones)
 
 | Component | Status | Tests |
 |-----------|--------|-------|
 | Core Types | ✅ Complete | 10/10 |
 | Authentication | ✅ Complete | 24/24 |
-| Device Registry | 🚧 In Progress | 13/13 |
+| Device Registry | ✅ Complete | 17/17 |
 | Message Router | ⏳ Pending | 0/? |
 | REST API | ⏳ Pending | 0/? |
 | WebSocket API | ⏳ Pending | 0/? |
 
-**Total Tests:** 47/47 passing ✅
+**Total Tests:** 51/51 passing ✅
 
 ## API Documentation
 
