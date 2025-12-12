@@ -1,0 +1,79 @@
+[workspace]
+members = [
+    "crates/uaip-core",
+    "crates/uaip-auth",
+    "crates/uaip-registry",
+    "crates/uaip-router",
+    "crates/uaip-security",
+    "crates/uaip-orchestrator",
+    "crates/uaip-adapters",
+    "crates/uaip-hub",
+]
+resolver = "2"
+
+[workspace.dependencies]
+# Web framework
+axum = "0.7"
+tower = "0.4"
+tower-http = "0.5"
+hyper = "1.0"
+
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+tokio-tungstenite = "0.21"
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Database
+sqlx = { version = "0.7", features = ["postgres", "runtime-tokio-rustls", "macros", "uuid", "chrono"] }
+redis = { version = "0.24", features = ["tokio-comp", "connection-manager"] }
+
+# Message queue
+async-nats = "0.33"
+
+# Security
+rustls = "0.22"
+jsonwebtoken = "9"
+bcrypt = "0.15"
+ring = "0.17"
+x509-parser = "0.16"
+
+# mDNS discovery
+mdns-sd = "0.10"
+
+# MQTT adapter
+rumqttc = "0.23"
+
+# Configuration
+config = "0.14"
+dotenvy = "0.15"
+
+# Logging & tracing
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Metrics
+prometheus = "0.13"
+
+# Testing
+mockall = "0.12"
+wiremock = "0.6"
+
+# Error handling
+thiserror = "1"
+anyhow = "1"
+
+# Utilities
+uuid = { version = "1", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+
+[profile.dev]
+opt-level = 0
+debug = true

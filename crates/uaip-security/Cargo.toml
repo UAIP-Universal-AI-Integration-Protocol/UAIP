@@ -1,0 +1,14 @@
+[package]
+name = "uaip-security"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+uaip-core = { path = "../uaip-core" }
+ring = { workspace = true }
+rustls = { workspace = true }
+thiserror = { workspace = true }
+serde = { workspace = true }
+tokio = { workspace = true }
+
+[dev-dependencies]

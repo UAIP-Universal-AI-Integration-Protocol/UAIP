@@ -1,0 +1,17 @@
+[package]
+name = "uaip-adapters"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+uaip-core = { path = "../uaip-core" }
+uaip-router = { path = "../uaip-router" }
+rumqttc = { workspace = true }
+tokio-tungstenite = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]

@@ -1,0 +1,112 @@
+version: '3.8'
+
+services:
+  # PostgreSQL - Device Registry & Persistent Storage
+  postgres:
+    image: postgres:16-alpine
+    container_name: uaip-postgres
+    environment:
+      POSTGRES_DB: uaip
+      POSTGRES_USER: uaip
+      POSTGRES_PASSWORD: uaip_password_dev
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --lc-collate=C --lc-ctype=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U uaip"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - uaip-network
+
+  # Redis - Caching & Session Storage
+  redis:
+    image: redis:7-alpine
+    container_name: uaip-redis
+    command: redis-server --appendonly yes --requirepass uaip_redis_dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - uaip-network
+
+  # NATS - Message Queue
+  nats:
+    image: nats:2.10-alpine
+    container_name: uaip-nats
+    command:
+      - "--jetstream"
+      - "--store_dir=/data"
+      - "--http_port=8222"
+    ports:
+      - "4222:4222"  # Client connections
+      - "8222:8222"  # HTTP monitoring
+      - "6222:6222"  # Cluster connections
+    volumes:
+      - nats_data:/data
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8222/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - uaip-network
+
+  # Prometheus - Metrics Collection (for Phase 4)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: uaip-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - uaip-network
+    profiles:
+      - monitoring
+
+  # Grafana - Metrics Visualization (for Phase 4)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: uaip-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_SECURITY_ADMIN_USER: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - uaip-network
+    profiles:
+      - monitoring
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  nats_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  uaip-network:
+    driver: bridge

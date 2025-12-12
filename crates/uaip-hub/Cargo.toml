@@ -1,0 +1,36 @@
+[package]
+name = "uaip-hub"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "uaip-hub"
+path = "src/main.rs"
+
+[dependencies]
+uaip-core = { path = "../uaip-core" }
+uaip-auth = { path = "../uaip-auth" }
+uaip-registry = { path = "../uaip-registry" }
+uaip-router = { path = "../uaip-router" }
+uaip-security = { path = "../uaip-security" }
+uaip-orchestrator = { path = "../uaip-orchestrator" }
+uaip-adapters = { path = "../uaip-adapters" }
+
+axum = { workspace = true }
+tower = { workspace = true }
+tower-http = { workspace = true }
+hyper = { workspace = true }
+tokio = { workspace = true }
+tokio-tungstenite = { workspace = true }
+rustls = { workspace = true }
+config = { workspace = true }
+dotenvy = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+prometheus = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+
+[dev-dependencies]
+wiremock = { workspace = true }

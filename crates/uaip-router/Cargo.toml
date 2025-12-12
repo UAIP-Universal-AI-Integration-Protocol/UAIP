@@ -1,0 +1,18 @@
+[package]
+name = "uaip-router"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+uaip-core = { path = "../uaip-core" }
+async-nats = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+uuid = { workspace = true }
+chrono = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+mockall = { workspace = true }
