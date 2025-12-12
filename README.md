@@ -1,10 +1,14 @@
 # UAIP Hub - Universal AI Integration Protocol
 
 > **Status:** Phase 1 - Foundation & MVP (In Progress)
+> **Created by:** [Hakille](https://github.com/Hakille)
+> **License:** Apache 2.0
 
 ## Overview
 
 UAIP (Universal AI Integration Protocol) is a universal protocol that enables AI systems to discover, authenticate, control, and monitor physical IoT devices. This is the Hub Core implementation - the central orchestration platform.
+
+**UAIP is created and owned by Hakille.**
 
 ## Architecture
 
@@ -221,12 +225,30 @@ API documentation will be available at `/api/docs` once the REST API is implemen
 
 ## Contributing
 
-This is a specification-to-implementation project. Follow the phased approach in the implementation plan.
+We welcome contributions! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+
+By contributing, you agree that your contributions will be licensed under the Apache 2.0 License.
 
 ## License
 
-[To be determined]
+Copyright 2024-2025 Hakille and UAIP Contributors
+
+UAIP (Universal AI Integration Protocol) is created and owned by **Hakille**.
+
+Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for the full license text.
+
+## Authors & Acknowledgments
+
+- **Hakille** - Protocol Creator & Original Author
+- **Claude Sonnet 4.5** - AI Development Assistant
+- See [CONTRIBUTORS.md](CONTRIBUTORS.md) for all contributors
 
 ## Contact
 
-[To be determined]
+- **GitHub:** [@Hakille](https://github.com/Hakille)
+- **Project Repository:** [github.com/Hakille/UAIP](https://github.com/Hakille/UAIP)
+- **Issues:** [github.com/Hakille/UAIP/issues](https://github.com/Hakille/UAIP/issues)
+
+---
+
+**Made with ❤️ by Hakille**
