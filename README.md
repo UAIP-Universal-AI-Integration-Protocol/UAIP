@@ -185,7 +185,7 @@ Priority: Environment variables > .env > default.toml
 - [x] Device CRUD operations
 - [x] Device registration workflow (3-step challenge)
 - [x] Device status tracking (online/offline/error)
-- [ ] Capability storage and querying
+- [x] Capability storage and querying
 - [ ] Redis caching for device states
 
 ### 📋 Upcoming Milestones
@@ -204,12 +204,12 @@ See the [implementation plan](.claude/plans/polished-tumbling-bumblebee.md) for 
 |-----------|--------|-------|
 | Core Types | ✅ Complete | 10/10 |
 | Authentication | ✅ Complete | 24/24 |
-| Device Registry | 🚧 In Progress | 10/10 |
+| Device Registry | 🚧 In Progress | 13/13 |
 | Message Router | ⏳ Pending | 0/? |
 | REST API | ⏳ Pending | 0/? |
 | WebSocket API | ⏳ Pending | 0/? |
 
-**Total Tests:** 44/44 passing ✅
+**Total Tests:** 47/47 passing ✅
 
 ## API Documentation
 
