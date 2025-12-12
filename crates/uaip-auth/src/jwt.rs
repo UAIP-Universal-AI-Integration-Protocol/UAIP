@@ -2,9 +2,9 @@
 //!
 //! This module handles JWT tokens for AI agent authentication using OAuth 2.0.
 
+use chrono::{Duration, Utc};
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
-use chrono::{Duration, Utc};
 use uaip_core::error::{Result, UaipError};
 
 /// JWT Claims structure for AI agents
@@ -72,8 +72,9 @@ impl JwtManager {
             session_id,
         };
 
-        encode(&Header::default(), &claims, &self.encoding_key)
-            .map_err(|e| UaipError::AuthenticationFailed(format!("Failed to generate token: {}", e)))
+        encode(&Header::default(), &claims, &self.encoding_key).map_err(|e| {
+            UaipError::AuthenticationFailed(format!("Failed to generate token: {}", e))
+        })
     }
 
     /// Validate and decode a JWT token
@@ -138,7 +139,9 @@ impl JwtManager {
     /// Verify that token has all required scopes
     pub fn has_all_scopes(&self, token: &str, required_scopes: &[String]) -> Result<bool> {
         let claims = self.validate_token(token)?;
-        Ok(required_scopes.iter().all(|req| claims.scopes.contains(req)))
+        Ok(required_scopes
+            .iter()
+            .all(|req| claims.scopes.contains(req)))
     }
 }
 
@@ -192,11 +195,15 @@ impl TokenRequest {
         }
 
         if self.client_id.is_empty() {
-            return Err(UaipError::InvalidParameter("client_id is required".to_string()));
+            return Err(UaipError::InvalidParameter(
+                "client_id is required".to_string(),
+            ));
         }
 
         if self.client_secret.is_empty() {
-            return Err(UaipError::InvalidParameter("client_secret is required".to_string()));
+            return Err(UaipError::InvalidParameter(
+                "client_secret is required".to_string(),
+            ));
         }
 
         Ok(())
@@ -233,7 +240,9 @@ mod tests {
             .generate_token("agent_001", "client_001", scopes.clone(), None)
             .expect("Should generate token");
 
-        let claims = manager.validate_token(&token).expect("Should validate token");
+        let claims = manager
+            .validate_token(&token)
+            .expect("Should validate token");
 
         assert_eq!(claims.sub, "agent_001");
         assert_eq!(claims.client_id, "client_001");
@@ -248,10 +257,17 @@ mod tests {
         let scopes = vec!["device:read".to_string()];
 
         let token = manager
-            .generate_token("agent_001", "client_001", scopes, Some("session_123".to_string()))
+            .generate_token(
+                "agent_001",
+                "client_001",
+                scopes,
+                Some("session_123".to_string()),
+            )
             .expect("Should generate token");
 
-        let claims = manager.validate_token(&token).expect("Should validate token");
+        let claims = manager
+            .validate_token(&token)
+            .expect("Should validate token");
         assert_eq!(claims.session_id, Some("session_123".to_string()));
     }
 
@@ -292,8 +308,12 @@ mod tests {
 
         let new_token = manager.refresh_token(&token).expect("Should refresh token");
 
-        let old_claims = manager.validate_token(&token).expect("Old token should be valid");
-        let new_claims = manager.validate_token(&new_token).expect("New token should be valid");
+        let old_claims = manager
+            .validate_token(&token)
+            .expect("Old token should be valid");
+        let new_claims = manager
+            .validate_token(&new_token)
+            .expect("New token should be valid");
 
         assert_eq!(old_claims.sub, new_claims.sub);
         assert_eq!(old_claims.client_id, new_claims.client_id);

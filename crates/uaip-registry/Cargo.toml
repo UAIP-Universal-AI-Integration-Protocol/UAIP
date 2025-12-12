@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 uaip-core = { path = "../uaip-core" }
+uaip-auth = { path = "../uaip-auth" }
 sqlx = { workspace = true }
 redis = { workspace = true }
 mdns-sd = { workspace = true }
@@ -15,6 +16,8 @@ uuid = { workspace = true }
 chrono = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }
+base64 = { workspace = true }
+rand = { workspace = true }
 
 [dev-dependencies]
 mockall = { workspace = true }

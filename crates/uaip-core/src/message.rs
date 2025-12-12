@@ -2,10 +2,10 @@
 //!
 //! This module defines the core message structure for the Universal AI Integration Protocol.
 
-use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use uuid::Uuid;
 
 /// Root message structure for UAIP
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -237,14 +237,19 @@ pub enum BackoffStrategy {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "snake_case")]
 pub enum QosLevel {
-    AtMostOnce,    // QoS 0: Fire and forget
-    AtLeastOnce,   // QoS 1: At least once delivery
-    ExactlyOnce,   // QoS 2: Exactly once delivery
+    AtMostOnce,  // QoS 0: Fire and forget
+    AtLeastOnce, // QoS 1: At least once delivery
+    ExactlyOnce, // QoS 2: Exactly once delivery
 }
 
 impl UaipMessage {
     /// Create a new UAIP message with default values
-    pub fn new(sender_id: String, sender_type: EntityType, recipient_id: String, recipient_type: EntityType) -> Self {
+    pub fn new(
+        sender_id: String,
+        sender_type: EntityType,
+        recipient_id: String,
+        recipient_type: EntityType,
+    ) -> Self {
         Self {
             header: Header {
                 version: "1.0".to_string(),

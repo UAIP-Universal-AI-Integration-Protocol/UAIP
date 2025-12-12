@@ -39,6 +39,8 @@ jsonwebtoken = "9"
 bcrypt = "0.15"
 ring = "0.17"
 x509-parser = "0.16"
+base64 = "0.21"
+rand = "0.8"
 
 # mDNS discovery
 mdns-sd = "0.10"

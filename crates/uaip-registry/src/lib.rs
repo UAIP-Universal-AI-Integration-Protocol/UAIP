@@ -2,6 +2,7 @@
 //!
 //! This crate manages device registration, discovery, and state tracking.
 
-pub mod models;
-pub mod repository;
 pub mod discovery;
+pub mod models;
+pub mod registration;
+pub mod repository;

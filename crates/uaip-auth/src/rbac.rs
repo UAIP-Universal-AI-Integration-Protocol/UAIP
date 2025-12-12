@@ -24,13 +24,14 @@ impl Permission {
         }
     }
 
-    /// Create from colon-separated string (e.g., "device:read")
-    pub fn from_str(perm_str: &str) -> Result<Self> {
+    /// Parse from colon-separated string (e.g., "device:read")
+    pub fn parse(perm_str: &str) -> Result<Self> {
         let parts: Vec<&str> = perm_str.split(':').collect();
         if parts.len() != 2 {
-            return Err(UaipError::InvalidParameter(
-                format!("Invalid permission format: {}", perm_str)
-            ));
+            return Err(UaipError::InvalidParameter(format!(
+                "Invalid permission format: {}",
+                perm_str
+            )));
         }
 
         Ok(Self {
@@ -97,53 +98,48 @@ pub struct Roles;
 impl Roles {
     /// Admin role - full access
     pub fn admin() -> Role {
-        Role::new("admin", "Full system access")
-            .add_permission(Permission::new("*", "*"))
+        Role::new("admin", "Full system access").add_permission(Permission::new("*", "*"))
     }
 
     /// Device manager - can manage all devices
     pub fn device_manager() -> Role {
-        Role::new("device_manager", "Can manage all devices")
-            .add_permissions(vec![
-                Permission::new("device", "read"),
-                Permission::new("device", "write"),
-                Permission::new("device", "execute"),
-                Permission::new("device", "delete"),
-                Permission::new("telemetry", "read"),
-                Permission::new("command", "execute"),
-            ])
+        Role::new("device_manager", "Can manage all devices").add_permissions(vec![
+            Permission::new("device", "read"),
+            Permission::new("device", "write"),
+            Permission::new("device", "execute"),
+            Permission::new("device", "delete"),
+            Permission::new("telemetry", "read"),
+            Permission::new("command", "execute"),
+        ])
     }
 
     /// Device operator - can control devices but not delete
     pub fn device_operator() -> Role {
-        Role::new("device_operator", "Can operate devices")
-            .add_permissions(vec![
-                Permission::new("device", "read"),
-                Permission::new("device", "execute"),
-                Permission::new("telemetry", "read"),
-                Permission::new("command", "execute"),
-            ])
+        Role::new("device_operator", "Can operate devices").add_permissions(vec![
+            Permission::new("device", "read"),
+            Permission::new("device", "execute"),
+            Permission::new("telemetry", "read"),
+            Permission::new("command", "execute"),
+        ])
     }
 
     /// Monitor - read-only access
     pub fn monitor() -> Role {
-        Role::new("monitor", "Read-only access")
-            .add_permissions(vec![
-                Permission::new("device", "read"),
-                Permission::new("telemetry", "read"),
-            ])
+        Role::new("monitor", "Read-only access").add_permissions(vec![
+            Permission::new("device", "read"),
+            Permission::new("telemetry", "read"),
+        ])
     }
 
     /// AI agent - typical AI agent permissions
     pub fn ai_agent() -> Role {
-        Role::new("ai_agent", "AI agent permissions")
-            .add_permissions(vec![
-                Permission::new("device", "read"),
-                Permission::new("device", "execute"),
-                Permission::new("telemetry", "read"),
-                Permission::new("command", "execute"),
-                Permission::new("event", "subscribe"),
-            ])
+        Role::new("ai_agent", "AI agent permissions").add_permissions(vec![
+            Permission::new("device", "read"),
+            Permission::new("device", "execute"),
+            Permission::new("telemetry", "read"),
+            Permission::new("command", "execute"),
+            Permission::new("event", "subscribe"),
+        ])
     }
 }
 
@@ -179,20 +175,25 @@ impl RbacManager {
     }
 
     /// Assign a role to a user/agent
-    pub fn assign_role(&mut self, entity_id: impl Into<String>, role_name: impl Into<String>) -> Result<()> {
+    pub fn assign_role(
+        &mut self,
+        entity_id: impl Into<String>,
+        role_name: impl Into<String>,
+    ) -> Result<()> {
         let entity_id = entity_id.into();
         let role_name = role_name.into();
 
         // Verify role exists
         if !self.roles.contains_key(&role_name) {
-            return Err(UaipError::InvalidParameter(
-                format!("Role '{}' does not exist", role_name)
-            ));
+            return Err(UaipError::InvalidParameter(format!(
+                "Role '{}' does not exist",
+                role_name
+            )));
         }
 
         self.assignments
             .entry(entity_id)
-            .or_insert_with(HashSet::new)
+            .or_default()
             .insert(role_name);
 
         Ok(())
@@ -227,7 +228,7 @@ impl RbacManager {
 
     /// Check if entity has a specific permission (string format)
     pub fn check_permission(&self, entity_id: &str, permission_str: &str) -> Result<bool> {
-        let permission = Permission::from_str(permission_str)?;
+        let permission = Permission::parse(permission_str)?;
         Ok(self.has_permission(entity_id, &permission))
     }
 
@@ -236,9 +237,10 @@ impl RbacManager {
         if self.check_permission(entity_id, permission_str)? {
             Ok(())
         } else {
-            Err(UaipError::AuthorizationFailed(
-                format!("Permission '{}' denied for entity '{}'", permission_str, entity_id)
-            ))
+            Err(UaipError::AuthorizationFailed(format!(
+                "Permission '{}' denied for entity '{}'",
+                permission_str, entity_id
+            )))
         }
     }
 
@@ -274,7 +276,7 @@ mod tests {
 
     #[test]
     fn test_permission_from_string() {
-        let perm = Permission::from_str("device:write").unwrap();
+        let perm = Permission::parse("device:write").unwrap();
         assert_eq!(perm.resource, "device");
         assert_eq!(perm.action, "write");
     }
@@ -346,7 +348,9 @@ mod tests {
         rbac.assign_role("agent_001", "monitor").unwrap();
 
         assert!(rbac.check_permission("agent_001", "device:read").unwrap());
-        assert!(rbac.check_permission("agent_001", "telemetry:read").unwrap());
+        assert!(rbac
+            .check_permission("agent_001", "telemetry:read")
+            .unwrap());
         assert!(!rbac.check_permission("agent_001", "device:write").unwrap());
     }
 

@@ -2,10 +2,10 @@
 //!
 //! This module handles X.509 certificates for device authentication.
 
-use uaip_core::error::{Result, UaipError};
-use x509_parser::prelude::*;
 use chrono::{DateTime, Utc};
 use std::collections::HashSet;
+use uaip_core::error::{Result, UaipError};
+use x509_parser::prelude::*;
 
 /// Certificate information extracted from X.509
 #[derive(Debug, Clone)]
@@ -62,8 +62,9 @@ impl CertificateValidator {
         let cert_data = self.extract_cert_data(pem_data)?;
 
         // Parse the X.509 certificate
-        let (_, cert) = X509Certificate::from_der(&cert_data)
-            .map_err(|e| UaipError::CertificateError(format!("Failed to parse certificate: {}", e)))?;
+        let (_, cert) = X509Certificate::from_der(&cert_data).map_err(|e| {
+            UaipError::CertificateError(format!("Failed to parse certificate: {}", e))
+        })?;
 
         // Extract subject CN
         let common_name = cert
@@ -96,10 +97,7 @@ impl CertificateValidator {
         let not_after = cert.validity().not_after.timestamp();
 
         // Extract serial number
-        let serial_number = cert
-            .serial
-            .to_str_radix(16)
-            .to_uppercase();
+        let serial_number = cert.serial.to_str_radix(16).to_uppercase();
 
         // Calculate fingerprint (simplified - in production use proper SHA-256)
         let fingerprint = format!("SHA256:{:X}", cert_data.len()); // Placeholder
@@ -109,10 +107,8 @@ impl CertificateValidator {
             organization,
             serial_number,
             issuer_cn,
-            not_before: DateTime::from_timestamp(not_before, 0)
-                .unwrap_or_else(|| Utc::now()),
-            not_after: DateTime::from_timestamp(not_after, 0)
-                .unwrap_or_else(|| Utc::now()),
+            not_before: DateTime::from_timestamp(not_before, 0).unwrap_or_else(Utc::now),
+            not_after: DateTime::from_timestamp(not_after, 0).unwrap_or_else(Utc::now),
             public_key: cert.public_key().raw.to_vec(),
             fingerprint,
         })
@@ -124,16 +120,22 @@ impl CertificateValidator {
 
         // Check if certificate is revoked
         if self.revoked_serials.contains(&cert_info.serial_number) {
-            return Err(UaipError::CertificateError("Certificate has been revoked".to_string()));
+            return Err(UaipError::CertificateError(
+                "Certificate has been revoked".to_string(),
+            ));
         }
 
         // Check validity period
         if now < cert_info.not_before {
-            return Err(UaipError::CertificateError("Certificate not yet valid".to_string()));
+            return Err(UaipError::CertificateError(
+                "Certificate not yet valid".to_string(),
+            ));
         }
 
         if now > cert_info.not_after {
-            return Err(UaipError::CertificateError("Certificate has expired".to_string()));
+            return Err(UaipError::CertificateError(
+                "Certificate has expired".to_string(),
+            ));
         }
 
         // In production, verify certificate chain against trusted CAs
@@ -146,14 +148,24 @@ impl CertificateValidator {
     fn extract_cert_data(&self, pem_data: &str) -> Result<Vec<u8>> {
         let lines: Vec<&str> = pem_data.lines().collect();
 
-        let start_idx = lines.iter().position(|l| l.contains("BEGIN CERTIFICATE"))
-            .ok_or_else(|| UaipError::CertificateError("No BEGIN CERTIFICATE marker found".to_string()))?;
+        let start_idx = lines
+            .iter()
+            .position(|l| l.contains("BEGIN CERTIFICATE"))
+            .ok_or_else(|| {
+                UaipError::CertificateError("No BEGIN CERTIFICATE marker found".to_string())
+            })?;
 
-        let end_idx = lines.iter().position(|l| l.contains("END CERTIFICATE"))
-            .ok_or_else(|| UaipError::CertificateError("No END CERTIFICATE marker found".to_string()))?;
+        let end_idx = lines
+            .iter()
+            .position(|l| l.contains("END CERTIFICATE"))
+            .ok_or_else(|| {
+                UaipError::CertificateError("No END CERTIFICATE marker found".to_string())
+            })?;
 
         if start_idx >= end_idx {
-            return Err(UaipError::CertificateError("Invalid PEM format".to_string()));
+            return Err(UaipError::CertificateError(
+                "Invalid PEM format".to_string(),
+            ));
         }
 
         // Join base64 lines (skip the markers)

@@ -2,8 +2,8 @@
 //!
 //! This module defines device metadata, capabilities, and status information.
 
-use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 /// Device information structure
@@ -289,25 +289,21 @@ mod tests {
 
     #[test]
     fn test_capability_creation() {
-        let capability = Capability::new(
-            "temperature".to_string(),
-            CapabilityType::Sensor,
-            true,
-        )
-        .add_action("read".to_string())
-        .add_parameter(
-            "unit".to_string(),
-            ParameterSpec {
-                param_type: ParameterType::String,
-                required: false,
-                default: Some(serde_json::json!("celsius")),
-                min: None,
-                max: None,
-                allowed_values: Some(vec!["celsius".to_string(), "fahrenheit".to_string()]),
-                unit: None,
-                description: Some("Temperature unit".to_string()),
-            },
-        );
+        let capability = Capability::new("temperature".to_string(), CapabilityType::Sensor, true)
+            .add_action("read".to_string())
+            .add_parameter(
+                "unit".to_string(),
+                ParameterSpec {
+                    param_type: ParameterType::String,
+                    required: false,
+                    default: Some(serde_json::json!("celsius")),
+                    min: None,
+                    max: None,
+                    allowed_values: Some(vec!["celsius".to_string(), "fahrenheit".to_string()]),
+                    unit: None,
+                    description: Some("Temperature unit".to_string()),
+                },
+            );
 
         assert_eq!(capability.name, "temperature");
         assert_eq!(capability.supported_actions.len(), 1);
@@ -323,13 +319,11 @@ mod tests {
             "SmartCam 3000".to_string(),
             "1.2.3".to_string(),
         )
-        .add_capability(
-            Capability::new(
-                "video_stream".to_string(),
-                CapabilityType::VideoStream,
-                true,
-            )
-        );
+        .add_capability(Capability::new(
+            "video_stream".to_string(),
+            CapabilityType::VideoStream,
+            true,
+        ));
 
         assert!(device.has_capability("video_stream"));
         assert!(!device.has_capability("audio_stream"));

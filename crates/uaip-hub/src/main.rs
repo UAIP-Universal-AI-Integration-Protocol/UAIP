@@ -5,8 +5,8 @@
 use anyhow::Result;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-mod config;
 mod api;
+mod config;
 mod handlers;
 mod telemetry;
 
