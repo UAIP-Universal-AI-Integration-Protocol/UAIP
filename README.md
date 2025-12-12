@@ -181,10 +181,10 @@ Priority: Environment variables > .env > default.toml
 
 ### 🚧 Milestone 1.3: Device Registry (Week 3) - IN PROGRESS
 
-- [ ] PostgreSQL device repository
-- [ ] Device CRUD operations
-- [ ] Device registration workflow (3-step challenge)
-- [ ] Device status tracking (online/offline/error)
+- [x] PostgreSQL device repository
+- [x] Device CRUD operations
+- [x] Device registration workflow (3-step challenge)
+- [x] Device status tracking (online/offline/error)
 - [ ] Capability storage and querying
 - [ ] Redis caching for device states
 
@@ -204,12 +204,12 @@ See the [implementation plan](.claude/plans/polished-tumbling-bumblebee.md) for 
 |-----------|--------|-------|
 | Core Types | ✅ Complete | 10/10 |
 | Authentication | ✅ Complete | 24/24 |
-| Device Registry | 🚧 In Progress | 0/? |
+| Device Registry | 🚧 In Progress | 10/10 |
 | Message Router | ⏳ Pending | 0/? |
 | REST API | ⏳ Pending | 0/? |
 | WebSocket API | ⏳ Pending | 0/? |
 
-**Total Tests:** 34/34 passing ✅
+**Total Tests:** 44/44 passing ✅
 
 ## API Documentation
 
