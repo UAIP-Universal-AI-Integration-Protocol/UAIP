@@ -53,14 +53,14 @@ impl CapabilityService {
     ///
     /// # Returns
     /// * `Result<Vec<Device>>` - Devices with the specified capability
-    pub async fn find_by_capability_name(
-        &self,
-        capability_name: &str,
-    ) -> UaipResult<Vec<Device>> {
+    pub async fn find_by_capability_name(&self, capability_name: &str) -> UaipResult<Vec<Device>> {
         use crate::models::DeviceFilter;
 
         // Get all devices first (in production, this should be a JSONB query)
-        let all_devices = self.repository.list_devices(DeviceFilter::default()).await?;
+        let all_devices = self
+            .repository
+            .list_devices(DeviceFilter::default())
+            .await?;
 
         // Filter devices that have the specified capability
         let filtered: Vec<Device> = all_devices
@@ -78,13 +78,13 @@ impl CapabilityService {
     ///
     /// # Returns
     /// * `Result<Vec<Device>>` - Devices with capabilities of the specified type
-    pub async fn find_by_capability_type(
-        &self,
-        capability_type: &str,
-    ) -> UaipResult<Vec<Device>> {
+    pub async fn find_by_capability_type(&self, capability_type: &str) -> UaipResult<Vec<Device>> {
         use crate::models::DeviceFilter;
 
-        let all_devices = self.repository.list_devices(DeviceFilter::default()).await?;
+        let all_devices = self
+            .repository
+            .list_devices(DeviceFilter::default())
+            .await?;
 
         let filtered: Vec<Device> = all_devices
             .into_iter()
@@ -104,7 +104,10 @@ impl CapabilityService {
     pub async fn find_by_action(&self, action: &str) -> UaipResult<Vec<Device>> {
         use crate::models::DeviceFilter;
 
-        let all_devices = self.repository.list_devices(DeviceFilter::default()).await?;
+        let all_devices = self
+            .repository
+            .list_devices(DeviceFilter::default())
+            .await?;
 
         let filtered: Vec<Device> = all_devices
             .into_iter()
@@ -129,7 +132,10 @@ impl CapabilityService {
     ) -> UaipResult<Vec<Device>> {
         use crate::models::DeviceFilter;
 
-        let all_devices = self.repository.list_devices(DeviceFilter::default()).await?;
+        let all_devices = self
+            .repository
+            .list_devices(DeviceFilter::default())
+            .await?;
 
         let filtered: Vec<Device> = all_devices
             .into_iter()
@@ -148,7 +154,10 @@ impl CapabilityService {
     pub async fn get_capability_summary(&self) -> UaipResult<CapabilitySummary> {
         use crate::models::DeviceFilter;
 
-        let all_devices = self.repository.list_devices(DeviceFilter::default()).await?;
+        let all_devices = self
+            .repository
+            .list_devices(DeviceFilter::default())
+            .await?;
 
         let mut capability_names = HashSet::new();
         let mut capability_types = HashSet::new();
@@ -156,9 +165,9 @@ impl CapabilityService {
         let mut devices_by_type: HashMap<String, usize> = HashMap::new();
 
         for device in &all_devices {
-            if let Ok(capabilities) = serde_json::from_value::<Vec<serde_json::Value>>(
-                device.capabilities.clone(),
-            ) {
+            if let Ok(capabilities) =
+                serde_json::from_value::<Vec<serde_json::Value>>(device.capabilities.clone())
+            {
                 for cap in capabilities {
                     if let (Some(name), Some(cap_type)) = (
                         cap.get("name").and_then(|v| v.as_str()),

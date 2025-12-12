@@ -82,6 +82,18 @@ pub enum UaipError {
     #[error("Resource not available: {0}")]
     ResourceUnavailable(String),
 
+    /// Resource not found
+    #[error("Not found: {0}")]
+    NotFound(String),
+
+    /// Invalid state
+    #[error("Invalid state: {0}")]
+    InvalidState(String),
+
+    /// Max retries exceeded
+    #[error("Max retries exceeded: {0}")]
+    MaxRetriesExceeded(String),
+
     /// Internal server error
     #[error("Internal error: {0}")]
     InternalError(String),
@@ -220,6 +232,9 @@ impl From<UaipError> for ErrorResponse {
             UaipError::InvalidParameter(msg) => (ErrorCode::InvalidParameter, msg.clone()),
             UaipError::NotPermitted(msg) => (ErrorCode::InsufficientPermissions, msg.clone()),
             UaipError::ResourceUnavailable(msg) => (ErrorCode::ResourceUnavailable, msg.clone()),
+            UaipError::NotFound(msg) => (ErrorCode::ResourceNotFound, msg.clone()),
+            UaipError::InvalidState(msg) => (ErrorCode::InvalidDeviceState, msg.clone()),
+            UaipError::MaxRetriesExceeded(msg) => (ErrorCode::QueueError, msg.clone()),
             UaipError::InternalError(msg) => (ErrorCode::InternalError, msg.clone()),
             UaipError::Custom(msg) => (ErrorCode::Unknown, msg.clone()),
         };

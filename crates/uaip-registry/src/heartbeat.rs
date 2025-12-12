@@ -23,9 +23,9 @@ pub struct HeartbeatConfig {
 impl Default for HeartbeatConfig {
     fn default() -> Self {
         Self {
-            heartbeat_interval: 30,      // Devices send heartbeat every 30s
-            timeout_grace_period: 60,     // 60s grace period
-            check_interval: 15,           // Check every 15s
+            heartbeat_interval: 30,   // Devices send heartbeat every 30s
+            timeout_grace_period: 60, // 60s grace period
+            check_interval: 15,       // Check every 15s
         }
     }
 }
@@ -130,9 +130,8 @@ impl HeartbeatService {
     /// * `Result<usize>` - Number of devices marked as offline
     pub async fn check_stale_devices(&self) -> UaipResult<usize> {
         let now = Utc::now();
-        let timeout_threshold = now - Duration::seconds(
-            self.config.heartbeat_interval + self.config.timeout_grace_period,
-        );
+        let timeout_threshold = now
+            - Duration::seconds(self.config.heartbeat_interval + self.config.timeout_grace_period);
 
         let mut offline_count = 0;
         let mut devices_to_update = Vec::new();
@@ -158,11 +157,7 @@ impl HeartbeatService {
                 .update_status(&device_id, DeviceStatus::Offline)
                 .await
             {
-                tracing::warn!(
-                    "Failed to update status for device {}: {}",
-                    device_id,
-                    e
-                );
+                tracing::warn!("Failed to update status for device {}: {}", device_id, e);
             }
         }
 

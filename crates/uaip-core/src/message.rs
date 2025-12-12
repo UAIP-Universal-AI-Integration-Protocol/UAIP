@@ -61,7 +61,7 @@ pub enum EntityType {
 }
 
 /// Message priority levels
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 #[serde(rename_all = "lowercase")]
 pub enum Priority {
     Low,

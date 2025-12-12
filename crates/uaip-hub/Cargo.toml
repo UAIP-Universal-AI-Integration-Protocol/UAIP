@@ -3,6 +3,10 @@ name = "uaip-hub"
 version = "0.1.0"
 edition = "2021"
 
+[lib]
+name = "uaip_hub"
+path = "src/lib.rs"
+
 [[bin]]
 name = "uaip-hub"
 path = "src/main.rs"
@@ -21,6 +25,7 @@ tower = { workspace = true }
 tower-http = { workspace = true }
 hyper = { workspace = true }
 tokio = { workspace = true }
+futures-util = { workspace = true }
 tokio-tungstenite = { workspace = true }
 rustls = { workspace = true }
 config = { workspace = true }
@@ -31,6 +36,8 @@ prometheus = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 anyhow = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
 
 [dev-dependencies]
 wiremock = { workspace = true }

@@ -21,8 +21,8 @@ pub struct CacheConfig {
 impl Default for CacheConfig {
     fn default() -> Self {
         Self {
-            device_ttl: 300,       // 5 minutes
-            status_ttl: 60,        // 1 minute
+            device_ttl: 300, // 5 minutes
+            status_ttl: 60,  // 1 minute
             key_prefix: "uaip:".to_string(),
         }
     }
@@ -62,8 +62,7 @@ impl CacheService {
     /// * `Result<()>` - Success or error
     pub async fn cache_device(&mut self, device: &Device) -> UaipResult<()> {
         let key = format!("{}device:{}", self.config.key_prefix, device.device_id);
-        let value = serde_json::to_string(device)
-            .map_err(UaipError::SerializationError)?;
+        let value = serde_json::to_string(device).map_err(UaipError::SerializationError)?;
 
         self.connection
             .set_ex::<_, _, ()>(&key, value, self.config.device_ttl)
@@ -91,8 +90,8 @@ impl CacheService {
 
         match value {
             Some(json) => {
-                let device: Device = serde_json::from_str(&json)
-                    .map_err(UaipError::SerializationError)?;
+                let device: Device =
+                    serde_json::from_str(&json).map_err(UaipError::SerializationError)?;
                 Ok(Some(device))
             }
             None => Ok(None),
@@ -123,8 +122,7 @@ impl CacheService {
             cached_at: Utc::now(),
         };
 
-        let value = serde_json::to_string(&state)
-            .map_err(UaipError::SerializationError)?;
+        let value = serde_json::to_string(&state).map_err(UaipError::SerializationError)?;
 
         self.connection
             .set_ex::<_, _, ()>(&key, value, self.config.status_ttl)
@@ -155,8 +153,8 @@ impl CacheService {
 
         match value {
             Some(json) => {
-                let state: CachedDeviceState = serde_json::from_str(&json)
-                    .map_err(UaipError::SerializationError)?;
+                let state: CachedDeviceState =
+                    serde_json::from_str(&json).map_err(UaipError::SerializationError)?;
                 Ok(Some(state))
             }
             None => Ok(None),

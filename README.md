@@ -50,7 +50,7 @@ uaip-hub/
 ### 1. Clone and Setup
 
 ```bash
-git clone https://github.com/Hakille/UAIP.git
+git clone https://github.com/UAIP-Universal-AI-Integration-Protocol/UAIP.git
 cd UAIP
 cp .env.example .env
 ```
@@ -197,28 +197,81 @@ Priority: Environment variables > .env > default.toml
 - Redis caching for devices and statuses
 - Configurable TTL and cache invalidation
 
-### 📋 Upcoming Milestones
+### ✅ Milestone 1.4: Message Router (Week 4) - COMPLETED
 
-- Milestone 1.4: Message Router (Week 4)
-- Milestone 1.5: REST API (Week 5)
-- Milestone 1.6: WebSocket API (Week 6)
+- [x] Priority queue implementation (critical > high > normal > low)
+- [x] Message routing logic (sender → recipient)
+- [x] QoS Level 0 (fire-and-forget)
+- [x] QoS Level 1 (at-least-once with ACK)
+- [x] QoS Level 2 (exactly-once, two-phase commit)
+- [x] NATS message broker integration
+- [x] Router statistics and monitoring
+
+**Tests:** 17/17 passing ✅
+**Features:**
+- Priority-based message queuing with FIFO within priority levels
+- Route registration and management
+- Three QoS levels with full acknowledgment flows
+- NATS pub/sub integration
+- Message retry logic with configurable max attempts
+- Comprehensive routing and QoS statistics
+
+### ✅ Milestone 1.5: REST API (Week 5) - COMPLETED
+
+- [x] Axum HTTP server with async/await
+- [x] POST /api/v1/auth/login (OAuth 2.0 client_credentials)
+- [x] POST /api/v1/devices/register
+- [x] GET /api/v1/devices
+- [x] POST /api/v1/devices/{id}/command
+- [x] GET /api/v1/system/health
+- [x] Error handling with proper HTTP status codes
+- [x] CORS and request tracing middleware
+
+**Tests:** 11/11 passing ✅
+**Features:**
+- Full REST API with Axum framework
+- OAuth 2.0 client credentials flow for authentication
+- Device registration and command endpoints
+- Health check endpoint for monitoring
+- Structured error responses with proper HTTP status codes
+- Request/response logging and tracing
+
+### ✅ Milestone 1.6: WebSocket API (Week 6) - COMPLETED
+
+- [x] Axum WebSocket endpoint with tokio-tungstenite
+- [x] WebSocket handshake protocol
+- [x] Session management with pub-sub
+- [x] Heartbeat mechanism (30-second intervals)
+- [x] Real-time device event streaming
+- [x] Bidirectional message handling
+
+**Tests:** 7/7 passing ✅
+**Features:**
+- Session manager with broadcast channels for pub-sub
+- WsMessage protocol with 9 message types (Subscribe, Unsubscribe, Telemetry, Command, Event, Ping, Pong, Error, Ack)
+- Concurrent send/receive tasks with tokio::spawn
+- Automatic heartbeat ping every 30 seconds
+- Message serialization/deserialization with tagged JSON
+- Session cleanup on disconnect
+
+### 📋 Upcoming Milestones
 
 See the [implementation plan](.claude/plans/polished-tumbling-bumblebee.md) for complete roadmap.
 
 ### 📊 Overall Progress
 
-**Phase 1 - Foundation & MVP:** 50% complete (3/6 milestones)
+**Phase 1 - Foundation & MVP:** ✅ 100% COMPLETE (6/6 milestones)
 
 | Component | Status | Tests |
 |-----------|--------|-------|
 | Core Types | ✅ Complete | 10/10 |
 | Authentication | ✅ Complete | 24/24 |
 | Device Registry | ✅ Complete | 17/17 |
-| Message Router | ⏳ Pending | 0/? |
-| REST API | ⏳ Pending | 0/? |
-| WebSocket API | ⏳ Pending | 0/? |
+| Message Router | ✅ Complete | 17/17 |
+| REST API | ✅ Complete | 11/11 |
+| WebSocket API | ✅ Complete | 7/7 |
 
-**Total Tests:** 51/51 passing ✅
+**Total Tests:** 86/86 passing ✅
 
 ## API Documentation
 
@@ -255,8 +308,8 @@ Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for the f
 ## Contact
 
 - **GitHub:** [@Hakille](https://github.com/Hakille)
-- **Project Repository:** [github.com/Hakille/UAIP](https://github.com/Hakille/UAIP)
-- **Issues:** [github.com/Hakille/UAIP/issues](https://github.com/Hakille/UAIP/issues)
+- **Project Repository:** [github.com/UAIP-Universal-AI-Integration-Protocol/UAIP](https://github.com/UAIP-Universal-AI-Integration-Protocol/UAIP)
+- **Issues:** [github.com/UAIP-Universal-AI-Integration-Protocol/UAIP/issues](https://github.com/UAIP-Universal-AI-Integration-Protocol/UAIP/issues)
 
 ---
 
