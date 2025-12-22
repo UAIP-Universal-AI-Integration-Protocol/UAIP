@@ -111,6 +111,8 @@ pub struct LoginResponse {
     pub token_type: String,
     pub expires_in: u64,
     pub scope: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub refresh_token: Option<String>,
 }
 
 /// Device registration request
