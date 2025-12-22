@@ -22,15 +22,33 @@ use crate::handlers;
 /// Application state shared across handlers
 #[derive(Clone)]
 pub struct AppState {
-    // Will be populated with actual services later
-    pub _marker: std::marker::PhantomData<()>,
+    pub db_pool: Option<sqlx::PgPool>,
+    pub redis_client: Option<redis::Client>,
+    pub nats_client: Option<async_nats::Client>,
 }
 
 impl AppState {
     pub fn new() -> Self {
         Self {
-            _marker: std::marker::PhantomData,
+            db_pool: None,
+            redis_client: None,
+            nats_client: None,
         }
+    }
+
+    pub fn with_db(mut self, pool: sqlx::PgPool) -> Self {
+        self.db_pool = Some(pool);
+        self
+    }
+
+    pub fn with_redis(mut self, client: redis::Client) -> Self {
+        self.redis_client = Some(client);
+        self
+    }
+
+    pub fn with_nats(mut self, client: async_nats::Client) -> Self {
+        self.nats_client = Some(client);
+        self
     }
 }
 
@@ -181,7 +199,9 @@ mod tests {
     #[test]
     fn test_app_state_creation() {
         let state = AppState::new();
-        assert!(std::ptr::eq(&state._marker, &state._marker));
+        assert!(state.db_pool.is_none());
+        assert!(state.redis_client.is_none());
+        assert!(state.nats_client.is_none());
     }
 
     #[test]

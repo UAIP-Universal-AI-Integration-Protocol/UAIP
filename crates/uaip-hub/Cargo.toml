@@ -39,6 +39,9 @@ serde_json = { workspace = true }
 anyhow = { workspace = true }
 chrono = { workspace = true }
 uuid = { workspace = true }
+sqlx = { workspace = true }
+redis = { workspace = true }
+async-nats = { workspace = true }
 
 [dev-dependencies]
 wiremock = { workspace = true }
