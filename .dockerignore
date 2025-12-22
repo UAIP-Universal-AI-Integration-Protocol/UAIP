@@ -1,0 +1,41 @@
+# Build artifacts
+target/
+**/*.rs.bk
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+!README.md
+docs/
+
+# CI/CD
+.github/
+
+# Test data
+tests/fixtures/
+
+# Local environment
+.env
+*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
