@@ -1,0 +1,211 @@
+version: '3.8'
+
+services:
+  # ============================================================================
+  # UAIP Hub (Main Application)
+  # ============================================================================
+  uaip-hub:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder  # Use builder stage for development
+    container_name: uaip-hub-dev
+    ports:
+      - "8443:8443"   # HTTP API
+      - "9091:9091"   # Prometheus metrics
+    environment:
+      RUST_LOG: debug
+      RUST_BACKTRACE: 1
+      DATABASE_URL: postgresql://uaip:uaip_password_dev@postgres:5432/uaip
+      REDIS_URL: redis://:uaip_redis_dev@redis:6379
+      NATS_URL: nats://nats:4222
+      JWT_SECRET: dev_secret_change_in_production
+      SERVER_HOST: 0.0.0.0
+      SERVER_PORT: 8443
+    volumes:
+      - ./config:/app/config:ro
+      - ./target:/build/target  # Cache build artifacts
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+    networks:
+      - uaip-network
+    restart: unless-stopped
+
+  # ============================================================================
+  # PostgreSQL - Device Registry & Persistent Storage
+  # ============================================================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: uaip-postgres
+    environment:
+      POSTGRES_DB: uaip
+      POSTGRES_USER: uaip
+      POSTGRES_PASSWORD: uaip_password_dev
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --lc-collate=C --lc-ctype=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U uaip"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - uaip-network
+    restart: unless-stopped
+
+  # ============================================================================
+  # Redis - Caching & Session Storage
+  # ============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: uaip-redis
+    command: redis-server --appendonly yes --requirepass uaip_redis_dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - uaip-network
+    restart: unless-stopped
+
+  # ============================================================================
+  # NATS - Message Queue
+  # ============================================================================
+  nats:
+    image: nats:2.10-alpine
+    container_name: uaip-nats
+    command:
+      - "--jetstream"
+      - "--store_dir=/data"
+      - "--http_port=8222"
+    ports:
+      - "4222:4222"  # Client connections
+      - "8222:8222"  # HTTP monitoring
+      - "6222:6222"  # Cluster connections
+    volumes:
+      - nats_data:/data
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8222/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - uaip-network
+    restart: unless-stopped
+
+  # ============================================================================
+  # Prometheus - Metrics Collection
+  # ============================================================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: uaip-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    networks:
+      - uaip-network
+    restart: unless-stopped
+    depends_on:
+      - uaip-hub
+
+  # ============================================================================
+  # Grafana - Metrics Visualization
+  # ============================================================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: uaip-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_INSTALL_PLUGINS: grafana-clock-panel
+      GF_SERVER_ROOT_URL: http://localhost:3000
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    networks:
+      - uaip-network
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+
+  # ============================================================================
+  # pgAdmin - PostgreSQL Management (Optional)
+  # ============================================================================
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: uaip-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@uaip.local
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - uaip-network
+    restart: unless-stopped
+    profiles:
+      - tools
+
+  # ============================================================================
+  # Redis Commander - Redis Management (Optional)
+  # ============================================================================
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: uaip-redis-commander
+    environment:
+      REDIS_HOSTS: local:redis:6379:0:uaip_redis_dev
+    ports:
+      - "8081:8081"
+    networks:
+      - uaip-network
+    restart: unless-stopped
+    profiles:
+      - tools
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  nats_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+
+networks:
+  uaip-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
