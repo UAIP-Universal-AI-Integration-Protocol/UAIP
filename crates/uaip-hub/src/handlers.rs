@@ -5,6 +5,7 @@ use axum::Json;
 pub mod auth;
 pub mod commands;
 pub mod devices;
+pub mod metrics;
 
 use crate::api::rest::HealthResponse;
 

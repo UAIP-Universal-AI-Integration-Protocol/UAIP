@@ -1,6 +1,9 @@
 //! Device management handlers
 
-use axum::{extract::{Path, State}, Json};
+use axum::{
+    extract::{Path, State},
+    Json,
+};
 use std::sync::Arc;
 
 use uaip_core::error::UaipError;
@@ -30,18 +33,12 @@ pub async fn register_device(
 ) -> ApiResult<Json<DeviceRegistrationResponse>> {
     // Validate device_id
     if request.device_id.is_empty() {
-        return Err(UaipError::InvalidParameter(
-            "device_id cannot be empty".to_string(),
-        )
-        .into());
+        return Err(UaipError::InvalidParameter("device_id cannot be empty".to_string()).into());
     }
 
     // Validate name
     if request.name.is_empty() {
-        return Err(UaipError::InvalidParameter(
-            "name cannot be empty".to_string(),
-        )
-        .into());
+        return Err(UaipError::InvalidParameter("name cannot be empty".to_string()).into());
     }
 
     // TODO: Use uaip-registry to initiate registration challenge
@@ -65,18 +62,12 @@ pub async fn send_command(
 ) -> ApiResult<Json<CommandResponse>> {
     // Validate device_id
     if device_id.is_empty() {
-        return Err(UaipError::InvalidParameter(
-            "device_id cannot be empty".to_string(),
-        )
-        .into());
+        return Err(UaipError::InvalidParameter("device_id cannot be empty".to_string()).into());
     }
 
     // Validate action
     if request.action.is_empty() {
-        return Err(UaipError::InvalidParameter(
-            "action cannot be empty".to_string(),
-        )
-        .into());
+        return Err(UaipError::InvalidParameter("action cannot be empty".to_string()).into());
     }
 
     // TODO: Validate device exists using uaip-registry
@@ -153,8 +144,8 @@ mod tests {
             priority: Some("normal".to_string()),
         };
 
-        let result = send_command(State(state), Path("device-001".to_string()), Json(request))
-            .await;
+        let result =
+            send_command(State(state), Path("device-001".to_string()), Json(request)).await;
         assert!(result.is_ok());
 
         let response = result.unwrap().0;
@@ -171,8 +162,8 @@ mod tests {
             priority: None,
         };
 
-        let result = send_command(State(state), Path("device-001".to_string()), Json(request))
-            .await;
+        let result =
+            send_command(State(state), Path("device-001".to_string()), Json(request)).await;
         assert!(result.is_err());
     }
 }
