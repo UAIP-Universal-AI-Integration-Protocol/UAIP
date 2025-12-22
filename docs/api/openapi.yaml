@@ -1,0 +1,753 @@
+openapi: 3.0.3
+info:
+  title: UAIP Hub API
+  description: |
+    Universal AI Integration Protocol (UAIP) Hub - Central orchestration platform for AI-controlled IoT devices.
+
+    ## Features
+    - Device discovery and registration
+    - Real-time device control via WebSocket
+    - Message routing with QoS levels (0, 1, 2)
+    - Priority-based message queuing
+    - JWT and X.509 certificate authentication
+    - Role-based access control (RBAC)
+    - End-to-end encryption (AES-256-GCM)
+    - Comprehensive monitoring and health checks
+
+    ## Authentication
+    Most endpoints require authentication via JWT token:
+    ```
+    Authorization: Bearer <your-jwt-token>
+    ```
+
+    Device endpoints also support X.509 certificate authentication.
+
+  version: 0.1.0
+  contact:
+    name: UAIP Team
+    url: https://github.com/UAIP-Universal-AI-Integration-Protocol/UAIP
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+
+servers:
+  - url: http://localhost:8443
+    description: Development server
+  - url: https://api.uaip.io
+    description: Production server
+
+tags:
+  - name: Authentication
+    description: User and device authentication endpoints
+  - name: Devices
+    description: Device registration, discovery, and management
+  - name: Messages
+    description: Message routing and delivery
+  - name: System
+    description: System health, metrics, and monitoring
+  - name: WebSocket
+    description: Real-time WebSocket communication
+
+paths:
+  /api/v1/auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: User login
+      description: Authenticate user and receive JWT token
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                  example: admin
+                password:
+                  type: string
+                  format: password
+                  example: password123
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: JWT access token
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  expires_in:
+                    type: integer
+                    description: Token expiration time in seconds
+                    example: 3600
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/v1/auth/refresh:
+    post:
+      tags:
+        - Authentication
+      summary: Refresh JWT token
+      description: Get a new JWT token using refresh token
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Token refreshed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  expires_in:
+                    type: integer
+
+  /api/v1/devices:
+    get:
+      tags:
+        - Devices
+      summary: List all devices
+      description: Retrieve a list of all registered devices
+      operationId: listDevices
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          description: Filter by device status
+          schema:
+            type: string
+            enum: [online, offline, error]
+        - name: type
+          in: query
+          description: Filter by device type
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Maximum number of devices to return
+          schema:
+            type: integer
+            default: 100
+            maximum: 1000
+        - name: offset
+          in: query
+          description: Number of devices to skip
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: List of devices
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  devices:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Device'
+                  total:
+                    type: integer
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - Devices
+      summary: Register a new device
+      description: Register a new IoT device with the hub
+      operationId: registerDevice
+      security:
+        - bearerAuth: []
+        - certificateAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceRegistration'
+      responses:
+        '201':
+          description: Device registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: Device already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/devices/{deviceId}:
+    get:
+      tags:
+        - Devices
+      summary: Get device details
+      description: Retrieve detailed information about a specific device
+      operationId: getDevice
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/DeviceId'
+      responses:
+        '200':
+          description: Device details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - Devices
+      summary: Update device
+      description: Update device information
+      operationId: updateDevice
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/DeviceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceUpdate'
+      responses:
+        '200':
+          description: Device updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Devices
+      summary: Unregister device
+      description: Remove a device from the registry
+      operationId: deleteDevice
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/DeviceId'
+      responses:
+        '204':
+          description: Device deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/devices/{deviceId}/command:
+    post:
+      tags:
+        - Devices
+      summary: Send command to device
+      description: Send a control command to a specific device
+      operationId: sendCommand
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/DeviceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceCommand'
+      responses:
+        '200':
+          description: Command sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommandResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '503':
+          description: Device offline or unreachable
+
+  /api/v1/messages:
+    post:
+      tags:
+        - Messages
+      summary: Send a message
+      description: Send a message through the UAIP message router
+      operationId: sendMessage
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Message'
+      responses:
+        '202':
+          description: Message accepted for routing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message_id:
+                    type: string
+                    format: uuid
+                  status:
+                    type: string
+                    enum: [queued, routing, delivered]
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/messages/{messageId}:
+    get:
+      tags:
+        - Messages
+      summary: Get message status
+      description: Retrieve the status of a sent message
+      operationId: getMessageStatus
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Message status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageStatus'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/system/health:
+    get:
+      tags:
+        - System
+      summary: Health check
+      description: Get system health status and dependency checks
+      operationId: healthCheck
+      responses:
+        '200':
+          description: System is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+        '503':
+          description: System is unhealthy or degraded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+  /api/v1/system/health/liveness:
+    get:
+      tags:
+        - System
+      summary: Liveness probe
+      description: Kubernetes liveness probe endpoint
+      responses:
+        '200':
+          description: Service is alive
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: alive
+
+  /api/v1/system/health/readiness:
+    get:
+      tags:
+        - System
+      summary: Readiness probe
+      description: Kubernetes readiness probe endpoint
+      responses:
+        '200':
+          description: Service is ready
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ready
+        '503':
+          description: Service is not ready
+
+  /metrics:
+    get:
+      tags:
+        - System
+      summary: Prometheus metrics
+      description: Retrieve Prometheus-format metrics
+      operationId: getMetrics
+      responses:
+        '200':
+          description: Metrics in Prometheus format
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: |
+                # HELP uaip_http_requests_total Total number of HTTP requests
+                # TYPE uaip_http_requests_total counter
+                uaip_http_requests_total{method="GET",endpoint="/api/v1/devices",status="200"} 1234
+
+  /ws/devices:
+    get:
+      tags:
+        - WebSocket
+      summary: Device WebSocket connection
+      description: |
+        WebSocket endpoint for real-time device communication.
+
+        Supports:
+        - Device registration
+        - Real-time telemetry streaming
+        - Bidirectional command/control
+        - Event notifications
+
+        **Message Format:**
+        ```json
+        {
+          "type": "register|telemetry|command|event",
+          "device_id": "uuid",
+          "data": {}
+        }
+        ```
+      parameters:
+        - name: Connection
+          in: header
+          required: true
+          schema:
+            type: string
+            example: Upgrade
+        - name: Upgrade
+          in: header
+          required: true
+          schema:
+            type: string
+            example: websocket
+      responses:
+        '101':
+          description: Switching Protocols (WebSocket connection established)
+        '400':
+          description: Bad Request (Invalid WebSocket handshake)
+        '401':
+          description: Unauthorized
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from /api/v1/auth/login
+
+    certificateAuth:
+      type: mutualTLS
+      description: X.509 certificate authentication for devices
+
+  parameters:
+    DeviceId:
+      name: deviceId
+      in: path
+      required: true
+      description: Unique device identifier
+      schema:
+        type: string
+        format: uuid
+      example: 550e8400-e29b-41d4-a716-446655440000
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        roles:
+          type: array
+          items:
+            type: string
+          example: [admin, device_manager]
+        created_at:
+          type: string
+          format: date-time
+
+    Device:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: Living Room Thermostat
+        device_type:
+          type: string
+          example: thermostat
+        status:
+          type: string
+          enum: [online, offline, error]
+        capabilities:
+          type: array
+          items:
+            type: string
+          example: [temperature_control, humidity_sensing]
+        location:
+          type: string
+          example: Living Room
+        metadata:
+          type: object
+          additionalProperties: true
+        last_seen:
+          type: string
+          format: date-time
+        registered_at:
+          type: string
+          format: date-time
+
+    DeviceRegistration:
+      type: object
+      required:
+        - name
+        - device_type
+      properties:
+        name:
+          type: string
+        device_type:
+          type: string
+        capabilities:
+          type: array
+          items:
+            type: string
+        location:
+          type: string
+        metadata:
+          type: object
+          additionalProperties: true
+
+    DeviceUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        location:
+          type: string
+        metadata:
+          type: object
+          additionalProperties: true
+
+    DeviceCommand:
+      type: object
+      required:
+        - command
+      properties:
+        command:
+          type: string
+          example: set_temperature
+        params:
+          type: object
+          additionalProperties: true
+          example:
+            temperature: 22.5
+            mode: auto
+        qos:
+          type: integer
+          enum: [0, 1, 2]
+          default: 1
+          description: Quality of Service level
+        priority:
+          type: integer
+          minimum: 0
+          maximum: 10
+          default: 5
+
+    CommandResponse:
+      type: object
+      properties:
+        message_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [queued, sent, acknowledged, failed]
+        timestamp:
+          type: string
+          format: date-time
+
+    Message:
+      type: object
+      required:
+        - source
+        - destination
+        - payload
+      properties:
+        source:
+          type: string
+          description: Source device or service ID
+        destination:
+          type: string
+          description: Destination device or service ID
+        payload:
+          type: object
+          additionalProperties: true
+        qos:
+          type: integer
+          enum: [0, 1, 2]
+          default: 1
+        priority:
+          type: integer
+          minimum: 0
+          maximum: 10
+          default: 5
+        encryption:
+          type: boolean
+          default: true
+
+    MessageStatus:
+      type: object
+      properties:
+        message_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [queued, routing, delivered, failed]
+        created_at:
+          type: string
+          format: date-time
+        delivered_at:
+          type: string
+          format: date-time
+        error:
+          type: string
+
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        version:
+          type: string
+        uptime_seconds:
+          type: integer
+        timestamp:
+          type: string
+          format: date-time
+        dependencies:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                example: PostgreSQL
+              status:
+                type: string
+                enum: [healthy, degraded, unhealthy]
+              latency_ms:
+                type: number
+              message:
+                type: string
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+        code:
+          type: string
+          description: Error code
+        details:
+          type: object
+          additionalProperties: true
+
+  responses:
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: Invalid request parameters
+            code: INVALID_REQUEST
+
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: Authentication required
+            code: UNAUTHORIZED
+
+    NotFound:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: Resource not found
+            code: NOT_FOUND
+
+    InternalError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: Internal server error
+            code: INTERNAL_ERROR

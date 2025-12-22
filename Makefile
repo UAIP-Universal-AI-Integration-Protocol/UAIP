@@ -258,3 +258,47 @@ full-check: fmt lint test audit ## Run all checks
 
 dev-full: clean install up ## Full development setup
 	@echo "$(GREEN)✓ Development environment ready!$(NC)"
+
+##@ API Documentation
+
+docs: ## Generate API documentation
+	@echo "$(BLUE)Generating API documentation...$(NC)"
+	./scripts/generate-docs.sh
+	@echo "$(GREEN)✓ Documentation generated in docs/api/generated/$(NC)"
+
+docs-serve: ## Generate and serve API documentation
+	@echo "$(BLUE)Generating and serving API documentation...$(NC)"
+	SERVE_DOCS=yes ./scripts/generate-docs.sh
+
+docs-validate: ## Validate OpenAPI specification
+	@echo "$(BLUE)Validating OpenAPI spec...$(NC)"
+	@if [ -f docs/api/openapi.yaml ]; then \
+		echo "$(GREEN)✓ OpenAPI spec found$(NC)"; \
+	else \
+		echo "$(RED)✗ OpenAPI spec not found$(NC)"; \
+		exit 1; \
+	fi
+
+##@ Security
+
+security-scan: ## Run comprehensive security scans
+	@echo "$(BLUE)Running security scans...$(NC)"
+	@echo "$(YELLOW)1. Running cargo audit...$(NC)"
+	cargo audit
+	@echo "$(YELLOW)2. Running cargo deny...$(NC)"
+	cargo deny check
+	@echo "$(GREEN)✓ Security scans complete$(NC)"
+
+security-audit: ## Run cargo audit only
+	@echo "$(BLUE)Running cargo audit...$(NC)"
+	cargo audit
+
+security-deny: ## Run cargo deny only
+	@echo "$(BLUE)Running cargo deny...$(NC)"
+	cargo deny check
+
+install-security-tools: ## Install security scanning tools
+	@echo "$(BLUE)Installing security tools...$(NC)"
+	cargo install cargo-audit cargo-deny
+	@echo "$(GREEN)✓ Security tools installed$(NC)"
+
