@@ -1,0 +1,1079 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "panels": [],
+      "title": "PostgreSQL Metrics",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "red",
+                  "index": 1,
+                  "text": "Down"
+                },
+                "1": {
+                  "color": "green",
+                  "index": 0,
+                  "text": "Up"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 1
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "up{job=\"postgresql\"}",
+          "refId": "A"
+        }
+      ],
+      "title": "PostgreSQL Status",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 10,
+        "x": 4,
+        "y": 1
+      },
+      "id": 3,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "pg_stat_activity_count",
+          "legendFormat": "Active Connections",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "pg_settings_max_connections",
+          "legendFormat": "Max Connections",
+          "refId": "B"
+        }
+      ],
+      "title": "PostgreSQL Connections",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 10,
+        "x": 14,
+        "y": 1
+      },
+      "id": 4,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "rate(pg_stat_database_xact_commit{datname=\"uaip\"}[1m])",
+          "legendFormat": "Commits",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "rate(pg_stat_database_xact_rollback{datname=\"uaip\"}[1m])",
+          "legendFormat": "Rollbacks",
+          "refId": "B"
+        }
+      ],
+      "title": "PostgreSQL Transaction Rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 5
+      },
+      "id": 5,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "pg_stat_database_numbackends{datname=\"uaip\"}",
+          "refId": "A"
+        }
+      ],
+      "title": "Active Backends",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      },
+      "id": 6,
+      "panels": [],
+      "title": "Redis Metrics",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "red",
+                  "index": 1,
+                  "text": "Down"
+                },
+                "1": {
+                  "color": "green",
+                  "index": 0,
+                  "text": "Up"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 10
+      },
+      "id": 7,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "up{job=\"redis\"}",
+          "refId": "A"
+        }
+      ],
+      "title": "Redis Status",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 10,
+        "x": 4,
+        "y": 10
+      },
+      "id": 8,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "redis_memory_used_bytes",
+          "legendFormat": "Used Memory",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "redis_memory_max_bytes",
+          "legendFormat": "Max Memory",
+          "refId": "B"
+        }
+      ],
+      "title": "Redis Memory Usage",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 10,
+        "x": 14,
+        "y": 10
+      },
+      "id": 9,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "rate(redis_commands_processed_total[1m])",
+          "legendFormat": "Commands/sec",
+          "refId": "A"
+        }
+      ],
+      "title": "Redis Command Rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 14
+      },
+      "id": 10,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "redis_connected_clients",
+          "refId": "A"
+        }
+      ],
+      "title": "Connected Clients",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 18
+      },
+      "id": 11,
+      "panels": [],
+      "title": "NATS Metrics",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "red",
+                  "index": 1,
+                  "text": "Down"
+                },
+                "1": {
+                  "color": "green",
+                  "index": 0,
+                  "text": "Up"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 19
+      },
+      "id": 12,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "up{job=\"nats\"}",
+          "refId": "A"
+        }
+      ],
+      "title": "NATS Status",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 10,
+        "x": 4,
+        "y": 19
+      },
+      "id": 13,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "nats_core_total_connections",
+          "legendFormat": "Total Connections",
+          "refId": "A"
+        }
+      ],
+      "title": "NATS Connections",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "Bps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 10,
+        "x": 14,
+        "y": 19
+      },
+      "id": 14,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "rate(nats_core_in_bytes[1m])",
+          "legendFormat": "Inbound",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "rate(nats_core_out_bytes[1m])",
+          "legendFormat": "Outbound",
+          "refId": "B"
+        }
+      ],
+      "title": "NATS Throughput",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 23
+      },
+      "id": 15,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "nats_core_total_subscriptions",
+          "refId": "A"
+        }
+      ],
+      "title": "Total Subscriptions",
+      "type": "stat"
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": [
+    "uaip",
+    "infrastructure",
+    "monitoring"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "UAIP Infrastructure Monitoring",
+  "uid": "uaip-infrastructure",
+  "version": 1,
+  "weekStart": ""
+}

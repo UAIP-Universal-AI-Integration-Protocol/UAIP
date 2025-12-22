@@ -9,11 +9,7 @@ use axum::{
 };
 use futures_util::{SinkExt, StreamExt};
 use serde::{Deserialize, Serialize};
-use std::{
-    collections::HashMap,
-    sync::Arc,
-    time::Duration,
-};
+use std::{collections::HashMap, sync::Arc, time::Duration};
 use tokio::sync::{broadcast, RwLock};
 use tracing::{debug, error, info, warn};
 
@@ -87,13 +83,9 @@ impl Default for SessionManager {
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum WsMessage {
     /// Subscribe to device events
-    Subscribe {
-        device_id: String,
-    },
+    Subscribe { device_id: String },
     /// Unsubscribe from device events
-    Unsubscribe {
-        device_id: String,
-    },
+    Unsubscribe { device_id: String },
     /// Device telemetry data
     Telemetry {
         device_id: String,
@@ -117,10 +109,7 @@ pub enum WsMessage {
     /// Heartbeat/pong
     Pong,
     /// Error message
-    Error {
-        code: String,
-        message: String,
-    },
+    Error { code: String, message: String },
     /// Success acknowledgment
     Ack {
         request_id: Option<String>,

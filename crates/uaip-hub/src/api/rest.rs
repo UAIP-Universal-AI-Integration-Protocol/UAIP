@@ -9,18 +9,15 @@ use axum::{
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tower::ServiceBuilder;
-use tower_http::{
-    cors::CorsLayer,
-    trace::TraceLayer,
-};
+use tower_http::{cors::CorsLayer, trace::TraceLayer};
 
 use uaip_core::error::{ErrorResponse, UaipError};
 
 /// Result type for API handlers
 pub type ApiResult<T> = Result<T, ApiError>;
 
-use crate::handlers;
 use crate::api::websocket;
+use crate::handlers;
 
 /// Application state shared across handlers
 #[derive(Clone)]
@@ -48,18 +45,22 @@ pub fn create_router(state: Arc<AppState>) -> Router {
     Router::new()
         // Health check
         .route("/api/v1/system/health", get(handlers::health_check))
-
+        // Metrics endpoint for Prometheus
+        .route("/metrics", get(handlers::metrics::metrics_handler))
         // Authentication
         .route("/api/v1/auth/login", post(handlers::auth::login))
-
         // Devices
         .route("/api/v1/devices", get(handlers::devices::list_devices))
-        .route("/api/v1/devices/register", post(handlers::devices::register_device))
-        .route("/api/v1/devices/:id/command", post(handlers::devices::send_command))
-
+        .route(
+            "/api/v1/devices/register",
+            post(handlers::devices::register_device),
+        )
+        .route(
+            "/api/v1/devices/:id/command",
+            post(handlers::devices::send_command),
+        )
         // WebSocket
         .route("/ws", get(websocket::ws_handler))
-
         .layer(
             ServiceBuilder::new()
                 .layer(TraceLayer::new_for_http())
@@ -198,7 +199,8 @@ mod tests {
 
     #[test]
     fn test_login_request_deserialization() {
-        let json = r#"{"grant_type":"client_credentials","client_id":"test","scope":"device:read"}"#;
+        let json =
+            r#"{"grant_type":"client_credentials","client_id":"test","scope":"device:read"}"#;
         let request: LoginRequest = serde_json::from_str(json).unwrap();
 
         assert_eq!(request.grant_type, "client_credentials");
