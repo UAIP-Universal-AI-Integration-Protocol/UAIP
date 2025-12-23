@@ -9,6 +9,11 @@ ring = { workspace = true }
 rustls = { workspace = true }
 thiserror = { workspace = true }
 serde = { workspace = true }
+serde_json = { workspace = true }
 tokio = { workspace = true }
+aes-gcm = "0.10"
+base64 = "0.21"
+rand = "0.8"
+zeroize = "1.7"
 
 [dev-dependencies]
