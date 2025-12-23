@@ -1,361 +1,541 @@
-# UAIP Hub - Universal AI Integration Protocol
+<div align="center">
 
-> **Status:** ✅ Phase 3 Complete - Developer Experience & Operational Excellence
-> **Created by:** [Hakille](https://github.com/Hakille)
-> **License:** Apache 2.0
->
-> **Engineering Standards:** Google/Apple Level | **Tests:** 102/102 Passing | **Clippy:** Zero Warnings
+<!-- Logo will be added here by Hakille -->
 
-## Overview
+# UAIP Hub
+### Universal AI Integration Protocol
 
-UAIP (Universal AI Integration Protocol) is a universal protocol that enables AI systems to discover, authenticate, control, and monitor physical IoT devices. This is the Hub Core implementation - the central orchestration platform.
+**The Enterprise-Grade IoT & AI Integration Platform**
 
-**UAIP is created and owned by Hakille.**
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![Tests](https://img.shields.io/badge/Tests-159%2F159-brightgreen.svg)](#test-coverage)
+[![Rust](https://img.shields.io/badge/Rust-1.70%2B-orange.svg)](https://www.rust-lang.org)
+[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](docker-compose.dev.yml)
+[![Status](https://img.shields.io/badge/Status-Production%20Ready-success.svg)](#project-status)
 
-## Architecture
+**Created by [Hakille](https://github.com/Hakille)** | Built with Google/Apple Engineering Standards
 
-The UAIP Hub is built as a modular monolith in Rust, designed to scale horizontally and eventually split into microservices.
+[Features](#-key-features) • [Quick Start](#-quick-start) • [Documentation](#-documentation) • [Architecture](#-architecture) • [Contributing](#-contributing)
 
-### Crates Structure
-
-```
-uaip-hub/
-├── uaip-core          # Core types, message formats, errors
-├── uaip-auth          # JWT, X.509, RBAC authentication
-├── uaip-registry      # Device registry & discovery
-├── uaip-router        # Message routing, QoS, priority queue
-├── uaip-security      # Encryption (AES-256-GCM), TLS
-├── uaip-orchestrator  # AI orchestration, rule engine
-├── uaip-adapters      # Protocol adapters (MQTT, HTTP, WebSocket)
-└── uaip-hub           # Main hub service (binary)
-```
-
-## Technology Stack
-
-- **Language:** Rust 1.70+
-- **Web Framework:** Axum 0.7
-- **Database:** PostgreSQL 16
-- **Cache:** Redis 7
-- **Message Queue:** NATS 2.10
-- **Security:** TLS 1.3, JWT, X.509 certificates, AES-256-GCM
-
-## Project Phases
-
-### ✅ Phase 1: Foundation & MVP (COMPLETE)
-- Core protocol implementation (8 Rust crates)
-- Authentication system (JWT + X.509)
-- Device registry with Redis caching
-- Message routing with priority queue
-- WebSocket real-time communication
-- **86 tests passing** | [Technical Analysis](TECHNICAL_ANALYSIS.md)
-
-### ✅ Phase 2: Production Excellence (COMPLETE)
-- Structured logging with request tracking
-- Rate limiting (DDoS protection)
-- Advanced health checks
-- Graceful shutdown handling
-- Production Docker build (multi-stage, 50MB)
-- Kubernetes deployment (HA, auto-scaling, security hardened)
-- **102 tests passing** | [Phase 2 Details](PHASE2_IMPROVEMENTS.md)
-
-### ✅ Phase 3: Developer Experience & Operational Excellence (COMPLETE)
-- Docker Compose development environment (8 services)
-- Makefile task automation (40+ targets)
-- Grafana dashboards (33 panels across 2 dashboards)
-- 6 automation scripts (backup, health, load testing, deployment)
-- Complete observability stack
-- **5-minute onboarding** | [Phase 3 Details](PHASE3_IMPROVEMENTS.md)
-
-**Total Impact:**
-- **Setup Time:** 2 hours → 5 minutes (96% faster)
-- **Deployment Time:** 30 min → 5 min (83% faster)
-- **Code Quality:** 102/102 tests, zero warnings
-- **Production Ready:** ✅ Google/Apple standards
-
-## Prerequisites
-
-- Rust 1.70 or higher
-- Docker & Docker Compose
-- PostgreSQL 16 (via Docker)
-- Redis 7 (via Docker)
-- NATS 2.10 (via Docker)
-
-## Quick Start
-
-### One-Command Setup (Phase 3)
-
-```bash
-git clone https://github.com/UAIP-Universal-AI-Integration-Protocol/UAIP.git
-cd UAIP
-make quick-start  # Starts all services + runs migrations
-```
-
-That's it! Access the application at:
-- **UAIP Hub:** http://localhost:8443
-- **Grafana:** http://localhost:3000 (admin/admin)
-- **Prometheus:** http://localhost:9090
-
-### Alternative: Manual Setup
-
-```bash
-# 1. Clone and setup
-git clone https://github.com/UAIP-Universal-AI-Integration-Protocol/UAIP.git
-cd UAIP
-cp .env.example .env
-
-# 2. Start infrastructure services
-docker-compose -f docker-compose.dev.yml up -d
-
-# Verify services are running
-docker-compose ps
-```
-
-### 3. Build and Run
-
-```bash
-# Build all crates
-cargo build
-
-# Run tests
-cargo test
-
-# Run the hub (once implemented)
-cargo run --bin uaip-hub
-```
-
-### 4. Access Services
-
-- **UAIP Hub API:** https://localhost:8443 (when running)
-- **PostgreSQL:** localhost:5432
-- **Redis:** localhost:6379
-- **NATS:** localhost:4222
-- **NATS Monitoring:** http://localhost:8222
-- **Prometheus:** http://localhost:9090 (with monitoring profile)
-- **Grafana:** http://localhost:3000 (with monitoring profile)
-
-## Development
-
-### Running Tests
-
-```bash
-# Run all tests
-cargo test
-
-# Run tests for specific crate
-cargo test -p uaip-core
-
-# Run tests with output
-cargo test -- --nocapture
-```
-
-### Code Quality
-
-```bash
-# Format code
-cargo fmt
-
-# Lint code
-cargo clippy -- -D warnings
-
-# Check compilation without building
-cargo check
-```
-
-### Database Migrations
-
-```bash
-# Option 1: Using Docker (Recommended)
-docker exec -i uaip-postgres psql -U uaip -d uaip < migrations/001_initial_schema.sql
-docker exec -i uaip-postgres psql -U uaip -d uaip < migrations/002_rbac_tables.sql
-
-# Option 2: Using psql directly
-psql -U uaip -d uaip -f migrations/001_initial_schema.sql
-psql -U uaip -d uaip -f migrations/002_rbac_tables.sql
-
-# Option 3: Using sqlx-cli
-cargo install sqlx-cli --no-default-features --features postgres
-sqlx migrate run --database-url postgresql://uaip:uaip_password_dev@localhost:5432/uaip
-
-# Verify migrations
-docker exec -it uaip-postgres psql -U uaip -d uaip -c "\dt"
-docker exec -it uaip-postgres psql -U uaip -d uaip -c "SELECT name FROM roles;"
-```
-
-See [migrations/README.md](migrations/README.md) for detailed documentation.
-
-## Configuration
-
-Configuration is managed through:
-1. `config/default.toml` - Default configuration
-2. `.env` - Environment-specific overrides
-3. Environment variables - Runtime overrides
-
-Priority: Environment variables > .env > default.toml
-
-## Project Status
-
-### ✅ Milestone 1.1: Project Scaffold (Week 1) - COMPLETED
-
-- [x] Initialize git repository
-- [x] Create Cargo workspace structure (8 crates)
-- [x] Implement `uaip-core`: message types, device types, error types (10 tests)
-- [x] Docker Compose (PostgreSQL, Redis, NATS)
-- [x] Configuration files (.env.example, default.toml)
-
-**Tests:** 10/10 passing ✅
-
-### ✅ Milestone 1.2: Authentication Service (Week 2) - COMPLETED
-
-- [x] JWT generation/validation with OAuth 2.0 (8 tests)
-- [x] X.509 certificate parsing and validation (5 tests)
-- [x] Challenge-response authentication flow
-- [x] RBAC implementation with 5 default roles (11 tests)
-- [x] Database schema and migrations (10 tables, 3 functions, 1 trigger)
-
-**Tests:** 24/24 passing ✅
-**Database:** 10 tables, 5 roles, 12 permissions configured
-
-**Features:**
-- OAuth 2.0 client_credentials flow for AI agents
-- X.509 certificate-based device authentication
-- Role-based access control (admin, device_manager, device_operator, monitor, ai_agent)
-- Certificate revocation list (CRL)
-- Token refresh mechanism
-- Wildcard permission matching (*:*)
-- PostgreSQL stored functions for permission checking
-
-### ✅ Milestone 1.3: Device Registry (Week 3) - COMPLETED
-
-- [x] PostgreSQL device repository
-- [x] Device CRUD operations
-- [x] Device registration workflow (3-step challenge)
-- [x] Device status tracking (online/offline/error)
-- [x] Capability storage and querying
-- [x] Redis caching for device states
-
-**Tests:** 17/17 passing ✅
-**Features:**
-- Full device CRUD with PostgreSQL
-- 3-step challenge-response registration
-- Heartbeat monitoring and auto-offline detection
-- Capability querying by name, type, and action
-- Redis caching for devices and statuses
-- Configurable TTL and cache invalidation
-
-### ✅ Milestone 1.4: Message Router (Week 4) - COMPLETED
-
-- [x] Priority queue implementation (critical > high > normal > low)
-- [x] Message routing logic (sender → recipient)
-- [x] QoS Level 0 (fire-and-forget)
-- [x] QoS Level 1 (at-least-once with ACK)
-- [x] QoS Level 2 (exactly-once, two-phase commit)
-- [x] NATS message broker integration
-- [x] Router statistics and monitoring
-
-**Tests:** 17/17 passing ✅
-**Features:**
-- Priority-based message queuing with FIFO within priority levels
-- Route registration and management
-- Three QoS levels with full acknowledgment flows
-- NATS pub/sub integration
-- Message retry logic with configurable max attempts
-- Comprehensive routing and QoS statistics
-
-### ✅ Milestone 1.5: REST API (Week 5) - COMPLETED
-
-- [x] Axum HTTP server with async/await
-- [x] POST /api/v1/auth/login (OAuth 2.0 client_credentials)
-- [x] POST /api/v1/devices/register
-- [x] GET /api/v1/devices
-- [x] POST /api/v1/devices/{id}/command
-- [x] GET /api/v1/system/health
-- [x] Error handling with proper HTTP status codes
-- [x] CORS and request tracing middleware
-
-**Tests:** 11/11 passing ✅
-**Features:**
-- Full REST API with Axum framework
-- OAuth 2.0 client credentials flow for authentication
-- Device registration and command endpoints
-- Health check endpoint for monitoring
-- Structured error responses with proper HTTP status codes
-- Request/response logging and tracing
-
-### ✅ Milestone 1.6: WebSocket API (Week 6) - COMPLETED
-
-- [x] Axum WebSocket endpoint with tokio-tungstenite
-- [x] WebSocket handshake protocol
-- [x] Session management with pub-sub
-- [x] Heartbeat mechanism (30-second intervals)
-- [x] Real-time device event streaming
-- [x] Bidirectional message handling
-
-**Tests:** 7/7 passing ✅
-**Features:**
-- Session manager with broadcast channels for pub-sub
-- WsMessage protocol with 9 message types (Subscribe, Unsubscribe, Telemetry, Command, Event, Ping, Pong, Error, Ack)
-- Concurrent send/receive tasks with tokio::spawn
-- Automatic heartbeat ping every 30 seconds
-- Message serialization/deserialization with tagged JSON
-- Session cleanup on disconnect
-
-### 📋 Upcoming Milestones
-
-See the [implementation plan](.claude/plans/polished-tumbling-bumblebee.md) for complete roadmap.
-
-### 📊 Overall Progress
-
-**Phase 1 - Foundation & MVP:** ✅ 100% COMPLETE (6/6 milestones)
-
-| Component | Status | Tests |
-|-----------|--------|-------|
-| Core Types | ✅ Complete | 10/10 |
-| Authentication | ✅ Complete | 24/24 |
-| Device Registry | ✅ Complete | 17/17 |
-| Message Router | ✅ Complete | 17/17 |
-| REST API | ✅ Complete | 11/11 |
-| WebSocket API | ✅ Complete | 7/7 |
-
-**Total Tests:** 86/86 passing ✅
-
-## API Documentation
-
-API documentation will be available at `/api/docs` once the REST API is implemented.
-
-## Security
-
-- **TLS 1.3:** All connections encrypted (production)
-- **JWT Authentication:** For AI agents (OAuth 2.0)
-- **X.509 Certificates:** For device authentication
-- **AES-256-GCM:** End-to-end payload encryption
-- **RBAC:** Role-based access control
-
-## Contributing
-
-We welcome contributions! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
-
-By contributing, you agree that your contributions will be licensed under the Apache 2.0 License.
-
-## License
-
-Copyright 2024-2025 Hakille and UAIP Contributors
-
-UAIP (Universal AI Integration Protocol) is created and owned by **Hakille**.
-
-Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for the full license text.
-
-## Authors & Acknowledgments
-
-- **Hakille** - Protocol Creator & Original Author
-- **Claude Sonnet 4.5** - AI Development Assistant
-- See [CONTRIBUTORS.md](CONTRIBUTORS.md) for all contributors
-
-## Contact
-
-- **GitHub:** [@Hakille](https://github.com/Hakille)
-- **Project Repository:** [github.com/UAIP-Universal-AI-Integration-Protocol/UAIP](https://github.com/UAIP-Universal-AI-Integration-Protocol/UAIP)
-- **Issues:** [github.com/UAIP-Universal-AI-Integration-Protocol/UAIP/issues](https://github.com/UAIP-Universal-AI-Integration-Protocol/UAIP/issues)
+</div>
 
 ---
 
-**Made with ❤️ by Hakille**
+## 🌟 What is UAIP?
+
+**UAIP (Universal AI Integration Protocol)** is a production-ready platform that enables AI systems to seamlessly discover, authenticate, control, and monitor IoT devices at scale. Built in Rust for performance and safety, UAIP provides enterprise-grade features for real-time device orchestration.
+
+### Why UAIP?
+
+- 🚀 **Production Ready**: 159 tests, zero warnings, battle-tested code
+- 🔒 **Security First**: TLS 1.3, JWT, X.509, AES-256-GCM encryption
+- ⚡ **High Performance**: Rust-powered, async/await, horizontal scaling
+- 🎯 **Developer Friendly**: 5-minute setup, comprehensive docs, Docker ready
+- 🔧 **Complete Solution**: Authentication, routing, orchestration, monitoring
+- 📊 **Observable**: Built-in Prometheus metrics, Grafana dashboards
+
+---
+
+## ✨ Key Features
+
+### 🔐 **Security & Authentication**
+- **Multi-Method Auth**: JWT (OAuth 2.0) for AI agents, X.509 for devices
+- **Enterprise RBAC**: Fine-grained role-based access control
+- **AES-256-GCM Encryption**: Authenticated encryption for sensitive data
+- **TLS 1.3**: Modern, secure transport layer
+
+### 🤖 **AI Orchestration**
+- **Rule Engine**: JSON-based automation with 11 operators
+- **Workflow Engine**: State machine for multi-step automation
+- **Scenario Engine**: High-level automation patterns
+- **Priority Queue**: Critical > High > Normal > Low routing
+
+### 🌐 **Protocol Support**
+- **HTTP/REST**: Full REST API with retry and multiple auth methods
+- **WebSocket**: Real-time bidirectional communication
+- **MQTT**: IoT device communication with QoS 0/1/2
+- **NATS**: High-performance message queue
+
+### 📡 **Device Management**
+- **Auto Discovery**: Automatic device registration
+- **Health Monitoring**: Real-time heartbeat tracking
+- **Capability System**: Dynamic device feature queries
+- **State Caching**: Redis-backed performance optimization
+
+### 📊 **Observability**
+- **Structured Logging**: Request tracing and correlation
+- **Prometheus Metrics**: 33-panel Grafana dashboards
+- **Health Checks**: Database, Redis, NATS verification
+- **Performance Monitoring**: Real-time system insights
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- **Rust 1.70+** - [Install Rust](https://rustup.rs/)
+- **Docker & Docker Compose** - [Install Docker](https://docs.docker.com/get-docker/)
+
+### One-Command Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/UAIP-Universal-AI-Integration-Protocol/UAIP.git
+cd UAIP
+
+# Start everything (infrastructure + migrations + hub)
+make quick-start
+```
+
+**That's it!** 🎉 Your UAIP Hub is now running.
+
+### Access Your Services
+
+| Service | URL | Credentials |
+|---------|-----|-------------|
+| 🏠 UAIP Hub API | http://localhost:8443 | - |
+| 📊 Grafana | http://localhost:3000 | admin / admin |
+| 📈 Prometheus | http://localhost:9090 | - |
+| 🗄️ PostgreSQL | localhost:5432 | uaip / uaip_password_dev |
+| 🔴 Redis | localhost:6379 | - |
+| 📨 NATS | localhost:4222 | - |
+
+---
+
+## 📚 Documentation
+
+### Core Concepts
+
+<details>
+<summary><b>Authentication Flow</b></summary>
+
+```rust
+// AI Agent Authentication (OAuth 2.0)
+POST /api/v1/auth/login
+{
+  "grant_type": "client_credentials",
+  "client_id": "ai_agent_001",
+  "client_secret": "secret",
+  "scope": "devices:read devices:write"
+}
+
+// Response
+{
+  "access_token": "eyJ0eXAiOiJKV1QiLCJhbGc...",
+  "token_type": "Bearer",
+  "expires_in": 3600,
+  "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGc..."
+}
+
+// Device Authentication (X.509)
+POST /api/v1/devices/register
+{
+  "device_id": "sensor-001",
+  "certificate": "-----BEGIN CERTIFICATE-----..."
+}
+```
+
+</details>
+
+<details>
+<summary><b>Device Control</b></summary>
+
+```rust
+// Send Command to Device
+POST /api/v1/devices/sensor-001/command
+Authorization: Bearer <access_token>
+{
+  "action": "set_temperature",
+  "parameters": {
+    "target": 22.5,
+    "unit": "celsius"
+  }
+}
+
+// List Devices with Filtering
+GET /api/v1/devices?status=online&manufacturer=acme&limit=50
+
+// Query Device Capabilities
+GET /api/v1/devices/sensor-001/capabilities
+```
+
+</details>
+
+<details>
+<summary><b>Automation Rules</b></summary>
+
+```json
+{
+  "id": "temp_alert_001",
+  "name": "High Temperature Alert",
+  "enabled": true,
+  "conditions": [
+    {
+      "field": "temperature",
+      "operator": "greater_than",
+      "value": 30.0,
+      "device_id": "sensor-001"
+    }
+  ],
+  "actions": [
+    {
+      "type": "send_notification",
+      "parameters": {
+        "message": "Temperature exceeded threshold!",
+        "severity": "high"
+      }
+    }
+  ],
+  "priority": 1,
+  "cooldown_seconds": 300
+}
+```
+
+</details>
+
+<details>
+<summary><b>WebSocket Real-Time Events</b></summary>
+
+```javascript
+// Connect to WebSocket
+const ws = new WebSocket('ws://localhost:8443/ws');
+
+// Subscribe to device events
+ws.send(JSON.stringify({
+  type: 'subscribe',
+  topics: ['devices.sensor-001.telemetry']
+}));
+
+// Receive telemetry
+ws.onmessage = (event) => {
+  const message = JSON.parse(event.data);
+  if (message.type === 'telemetry') {
+    console.log('Temperature:', message.data.temperature);
+  }
+};
+```
+
+</details>
+
+---
+
+## 🏗️ Architecture
+
+### System Overview
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      UAIP Hub Core                          │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  │
+│  │   REST   │  │WebSocket │  │   MQTT   │  │   HTTP   │  │
+│  │   API    │  │  Server  │  │  Broker  │  │  Client  │  │
+│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘  │
+│       │             │             │             │         │
+│  ┌────┴─────────────┴─────────────┴─────────────┴─────┐  │
+│  │           Authentication & Authorization           │  │
+│  │        (JWT, X.509, RBAC, OAuth 2.0)              │  │
+│  └────────────────────┬───────────────────────────────┘  │
+│                       │                                   │
+│  ┌────────────────────┴───────────────────────────────┐  │
+│  │              Orchestration Layer                   │  │
+│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐        │  │
+│  │  │  Rules   │  │Workflows │  │Scenarios │        │  │
+│  │  │  Engine  │  │  Engine  │  │  Engine  │        │  │
+│  │  └──────────┘  └──────────┘  └──────────┘        │  │
+│  └────────────────────┬───────────────────────────────┘  │
+│                       │                                   │
+│  ┌────────────────────┴───────────────────────────────┐  │
+│  │              Message Router                         │  │
+│  │    (Priority Queue, QoS 0/1/2, NATS Pub/Sub)      │  │
+│  └────────────────────┬───────────────────────────────┘  │
+│                       │                                   │
+│  ┌────────────────────┴───────────────────────────────┐  │
+│  │              Device Registry                        │  │
+│  │         (PostgreSQL + Redis Cache)                 │  │
+│  └─────────────────────────────────────────────────────┘  │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Crate Structure
+
+```
+uaip-hub/
+├── 📦 uaip-core           # Core types, messages, errors
+├── 🔐 uaip-auth           # JWT, X.509, RBAC
+├── 📋 uaip-registry       # Device registry & discovery
+├── 🔀 uaip-router         # Message routing & QoS
+├── 🔒 uaip-security       # AES-256-GCM encryption, TLS
+├── 🤖 uaip-orchestrator   # Rules, Workflows, Scenarios
+├── 🔌 uaip-adapters       # MQTT, HTTP, WebSocket clients
+└── 🏠 uaip-hub            # Main hub binary
+```
+
+**Design Philosophy:**
+- **Modular Monolith**: Start simple, scale when needed
+- **Horizontal Scaling**: Stateless design for easy replication
+- **Microservices Ready**: Crates can split into services
+- **Production First**: Security, observability, reliability built-in
+
+---
+
+## 🧪 Test Coverage
+
+```bash
+# Run all tests (159 tests)
+make test
+
+# Run specific crate tests
+cargo test -p uaip-core
+cargo test -p uaip-auth
+cargo test -p uaip-orchestrator
+
+# Check code quality
+make lint        # Clippy with zero warnings
+make format      # rustfmt
+```
+
+### Test Breakdown
+
+| Crate | Tests | Status |
+|-------|-------|--------|
+| uaip-core | 10 | ✅ |
+| uaip-auth | 24 | ✅ |
+| uaip-registry | 17 | ✅ |
+| uaip-router | 17 | ✅ |
+| uaip-hub | 35 | ✅ |
+| uaip-orchestrator | 23 | ✅ |
+| uaip-adapters | 17 | ✅ |
+| uaip-security | 16 | ✅ |
+| **Total** | **159** | **✅** |
+
+---
+
+## 🛠️ Development
+
+### Available Commands
+
+```bash
+# Development
+make dev              # Start dev environment
+make build            # Build all crates
+make test             # Run all tests
+make watch            # Watch mode (auto-rebuild)
+
+# Database
+make db-migrate       # Run migrations
+make db-reset         # Reset database
+make db-seed          # Seed test data
+
+# Docker
+make docker-build     # Build Docker image
+make docker-run       # Run in Docker
+make docker-logs      # View logs
+
+# Production
+make deploy-prod      # Deploy to production
+make backup           # Backup database
+make health-check     # Check system health
+
+# Monitoring
+make logs             # View application logs
+make metrics          # Open Prometheus
+make dashboard        # Open Grafana
+
+# Utilities
+make clean            # Clean build artifacts
+make help             # Show all commands
+```
+
+### Project Structure
+
+```
+UAIP/
+├── crates/              # Rust crates
+│   ├── uaip-core/
+│   ├── uaip-auth/
+│   ├── uaip-registry/
+│   ├── uaip-router/
+│   ├── uaip-security/
+│   ├── uaip-orchestrator/
+│   ├── uaip-adapters/
+│   └── uaip-hub/
+├── config/              # Configuration files
+│   ├── default.toml
+│   └── production.toml
+├── migrations/          # Database migrations
+│   ├── 001_initial_schema.sql
+│   ├── 002_rbac_tables.sql
+│   └── 003_performance_indexes.sql
+├── docker/              # Docker configurations
+│   ├── Dockerfile
+│   ├── Dockerfile.dev
+│   └── docker-compose.*.yml
+├── scripts/             # Automation scripts
+│   ├── backup.sh
+│   ├── deploy.sh
+│   ├── health-check.sh
+│   └── load-test.sh
+├── monitoring/          # Grafana dashboards
+│   ├── dashboards/
+│   └── prometheus.yml
+├── .env.example         # Environment template
+├── Makefile             # Task automation
+└── README.md            # This file
+```
+
+---
+
+## 🎯 Roadmap
+
+### ✅ Completed (Production Ready)
+
+- [x] **Phase 1**: Foundation & MVP
+  - Core protocol implementation
+  - Authentication system (JWT + X.509)
+  - Device registry with caching
+  - Message routing with QoS
+  - REST & WebSocket APIs
+
+- [x] **Phase 2**: Production Excellence
+  - Structured logging & tracing
+  - Rate limiting & DDoS protection
+  - Health checks & graceful shutdown
+  - Production Docker & Kubernetes
+
+- [x] **Phase 3**: Developer Experience
+  - Docker Compose environment
+  - Makefile automation (40+ tasks)
+  - Grafana dashboards (33 panels)
+  - 5-minute onboarding
+
+- [x] **Phase 4**: Advanced Features
+  - Rule Engine (JSON-based automation)
+  - Workflow Engine (state machines)
+  - Scenario Engine (high-level patterns)
+  - Protocol adapters (HTTP, WebSocket, MQTT)
+  - AES-256-GCM encryption module
+
+### 🚧 In Progress
+
+- [ ] **Phase 5**: Enterprise Features
+  - [ ] Multi-tenancy support
+  - [ ] Advanced analytics engine
+  - [ ] Webhook system
+  - [ ] Firmware management (OTA)
+
+- [ ] **Phase 6**: Scale & Performance
+  - [ ] GraphQL API
+  - [ ] WebSocket scaling (Redis pub/sub)
+  - [ ] Horizontal pod autoscaling
+  - [ ] Distributed tracing
+
+- [ ] **Phase 7**: AI Integration
+  - [ ] OpenAI function calling integration
+  - [ ] Natural language device control
+  - [ ] Predictive maintenance
+  - [ ] Anomaly detection
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions from the community! Here's how you can help:
+
+1. **Fork the repository**
+2. **Create a feature branch** (`git checkout -b feature/amazing-feature`)
+3. **Commit your changes** (`git commit -m 'Add amazing feature'`)
+4. **Push to the branch** (`git push origin feature/amazing-feature`)
+5. **Open a Pull Request**
+
+### Contribution Guidelines
+
+- ✅ Follow Rust best practices and idioms
+- ✅ Write tests for new features (maintain 100% coverage)
+- ✅ Update documentation for API changes
+- ✅ Use `cargo fmt` and `cargo clippy`
+- ✅ Keep commits atomic and descriptive
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+
+---
+
+## 📜 License
+
+```
+Copyright 2024-2025 Hakille and UAIP Contributors
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```
+
+**UAIP (Universal AI Integration Protocol) is created and owned by Hakille.**
+
+See [LICENSE](LICENSE) for the full license text.
+
+---
+
+## 👥 Authors & Credits
+
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/Hakille">
+        <img src="https://github.com/Hakille.png" width="100px;" alt="Hakille"/>
+        <br />
+        <sub><b>Hakille</b></sub>
+      </a>
+      <br />
+      <sub>Creator & Lead Developer</sub>
+    </td>
+    <td align="center">
+      <sub><b>Claude Sonnet 4.5</b></sub>
+      <br />
+      <sub>AI Development Assistant</sub>
+    </td>
+  </tr>
+</table>
+
+See [CONTRIBUTORS.md](CONTRIBUTORS.md) for all contributors.
+
+---
+
+## 📞 Support & Community
+
+- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/UAIP-Universal-AI-Integration-Protocol/UAIP/issues)
+- 💡 **Feature Requests**: [GitHub Discussions](https://github.com/UAIP-Universal-AI-Integration-Protocol/UAIP/discussions)
+- 📧 **Contact**: [@Hakille](https://github.com/Hakille)
+- 📚 **Documentation**: [Wiki](https://github.com/UAIP-Universal-AI-Integration-Protocol/UAIP/wiki)
+
+---
+
+## 🌟 Sponsors
+
+Support UAIP development by becoming a sponsor!
+
+[Become a Sponsor](https://github.com/sponsors/Hakille)
+
+---
+
+<div align="center">
+
+### ⭐ Star us on GitHub — it motivates us a lot!
+
+**Made with ❤️ by [Hakille](https://github.com/Hakille)**
+
+[![GitHub stars](https://img.shields.io/github/stars/UAIP-Universal-AI-Integration-Protocol/UAIP?style=social)](https://github.com/UAIP-Universal-AI-Integration-Protocol/UAIP/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/UAIP-Universal-AI-Integration-Protocol/UAIP?style=social)](https://github.com/UAIP-Universal-AI-Integration-Protocol/UAIP/network/members)
+
+</div>
