@@ -1,0 +1,27 @@
+[package]
+name = "uaip-device-simulator"
+version = "0.1.0"
+edition = "2021"
+authors = ["UAIP Team"]
+description = "IoT device simulator for UAIP Hub testing and development"
+
+[[bin]]
+name = "device-simulator"
+path = "src/main.rs"
+
+[dependencies]
+tokio = { version = "1.35", features = ["full"] }
+tokio-tungstenite = "0.21"
+futures-util = "0.3"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+uuid = { version = "1.6", features = ["v4", "serde"] }
+rand = "0.8"
+clap = { version = "4.4", features = ["derive", "env"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+chrono = { version = "0.4", features = ["serde"] }
+anyhow = "1.0"
+
+[dev-dependencies]
+criterion = "0.5"

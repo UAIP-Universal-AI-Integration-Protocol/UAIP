@@ -8,10 +8,13 @@ uaip-core = { path = "../uaip-core" }
 uaip-router = { path = "../uaip-router" }
 rumqttc = { workspace = true }
 tokio-tungstenite = { workspace = true }
+reqwest = { version = "0.11", features = ["json"] }
+futures-util = "0.3"
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }
+uuid = { workspace = true }
 
 [dev-dependencies]

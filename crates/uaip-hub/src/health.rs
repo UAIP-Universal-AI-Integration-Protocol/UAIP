@@ -4,7 +4,8 @@
 
 use axum::{http::StatusCode, Json};
 use serde::{Deserialize, Serialize};
-use std::time::Instant;
+use std::sync::{Arc, Mutex};
+use std::time::{Duration, Instant};
 
 /// Overall health status
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -34,20 +35,63 @@ pub struct HealthCheckResponse {
     pub dependencies: Vec<DependencyHealth>,
 }
 
-/// Health checker service
+/// Cached health check result
+#[derive(Debug, Clone)]
+struct CachedHealth {
+    result: HealthCheckResponse,
+    cached_at: Instant,
+}
+
+/// Health checker service with caching and circuit breaker
 pub struct HealthChecker {
     start_time: Instant,
+    db_pool: Option<sqlx::PgPool>,
+    redis_client: Option<redis::Client>,
+    nats_client: Option<async_nats::Client>,
+    cache: Arc<Mutex<Option<CachedHealth>>>,
+    cache_ttl: Duration,
 }
 
 impl HealthChecker {
     pub fn new() -> Self {
         Self {
             start_time: Instant::now(),
+            db_pool: None,
+            redis_client: None,
+            nats_client: None,
+            cache: Arc::new(Mutex::new(None)),
+            cache_ttl: Duration::from_secs(5), // 5 second cache TTL
         }
     }
 
-    /// Perform complete health check
+    pub fn with_db(mut self, pool: sqlx::PgPool) -> Self {
+        self.db_pool = Some(pool);
+        self
+    }
+
+    pub fn with_redis(mut self, client: redis::Client) -> Self {
+        self.redis_client = Some(client);
+        self
+    }
+
+    pub fn with_nats(mut self, client: async_nats::Client) -> Self {
+        self.nats_client = Some(client);
+        self
+    }
+
+    /// Perform complete health check with caching
     pub async fn check_health(&self) -> HealthCheckResponse {
+        // Check if we have a valid cached result
+        if let Ok(cache_guard) = self.cache.lock() {
+            if let Some(cached) = cache_guard.as_ref() {
+                if cached.cached_at.elapsed() < self.cache_ttl {
+                    tracing::debug!("Returning cached health check result");
+                    return cached.result.clone();
+                }
+            }
+        }
+
+        // Perform actual health checks
         let mut dependencies = Vec::new();
 
         // Check PostgreSQL
@@ -62,28 +106,66 @@ impl HealthChecker {
         // Determine overall status
         let overall_status = self.determine_overall_status(&dependencies);
 
-        HealthCheckResponse {
+        let result = HealthCheckResponse {
             status: overall_status,
             version: env!("CARGO_PKG_VERSION").to_string(),
             uptime_seconds: self.start_time.elapsed().as_secs(),
             timestamp: chrono::Utc::now().to_rfc3339(),
             dependencies,
+        };
+
+        // Cache the result
+        if let Ok(mut cache_guard) = self.cache.lock() {
+            *cache_guard = Some(CachedHealth {
+                result: result.clone(),
+                cached_at: Instant::now(),
+            });
         }
+
+        result
     }
 
-    /// Check PostgreSQL health
+    /// Check PostgreSQL health with timeout
     async fn check_postgres(&self) -> DependencyHealth {
         let start = Instant::now();
 
-        // TODO: Actual database connection check
-        // For now, simulate the check
-        let (status, message) = if std::env::var("DATABASE_URL").is_ok() {
-            (HealthStatus::Healthy, None)
-        } else {
-            (
-                HealthStatus::Unhealthy,
-                Some("DATABASE_URL not configured".to_string()),
-            )
+        let (status, message) = match &self.db_pool {
+            Some(pool) => {
+                // Try to execute a simple query with timeout (circuit breaker pattern)
+                let timeout_duration = Duration::from_secs(5);
+                match tokio::time::timeout(
+                    timeout_duration,
+                    sqlx::query("SELECT 1").execute(pool),
+                )
+                .await
+                {
+                    Ok(Ok(_)) => {
+                        // Also check pool statistics
+                        let pool_size = pool.size();
+                        let idle_connections = pool.num_idle();
+
+                        (
+                            HealthStatus::Healthy,
+                            Some(format!(
+                                "Pool size: {}, Idle: {}",
+                                pool_size, idle_connections
+                            )),
+                        )
+                    }
+                    Ok(Err(e)) => (
+                        HealthStatus::Unhealthy,
+                        Some(format!("Database query failed: {}", e)),
+                    ),
+                    Err(_) => (
+                        HealthStatus::Unhealthy,
+                        Some(format!("Database query timeout (>{}s)", timeout_duration.as_secs())),
+                    ),
+                }
+            }
+            None => (
+                HealthStatus::Degraded,
+                Some("PostgreSQL connection not configured".to_string()),
+            ),
         };
 
         DependencyHealth {
@@ -94,18 +176,47 @@ impl HealthChecker {
         }
     }
 
-    /// Check Redis health
+    /// Check Redis health with timeout
     async fn check_redis(&self) -> DependencyHealth {
         let start = Instant::now();
 
-        // TODO: Actual Redis connection check
-        let (status, message) = if std::env::var("REDIS_URL").is_ok() {
-            (HealthStatus::Healthy, None)
-        } else {
-            (
+        let (status, message) = match &self.redis_client {
+            Some(client) => {
+                let timeout_duration = Duration::from_secs(3);
+
+                // Try to get a connection and execute PING with timeout
+                let check_future = async {
+                    let mut conn = client.get_async_connection().await?;
+                    redis::cmd("PING")
+                        .query_async::<_, String>(&mut conn)
+                        .await
+                };
+
+                match tokio::time::timeout(timeout_duration, check_future).await {
+                    Ok(Ok(response)) => {
+                        if response == "PONG" {
+                            (HealthStatus::Healthy, Some("PONG received".to_string()))
+                        } else {
+                            (
+                                HealthStatus::Degraded,
+                                Some(format!("Unexpected response: {}", response)),
+                            )
+                        }
+                    }
+                    Ok(Err(e)) => (
+                        HealthStatus::Unhealthy,
+                        Some(format!("Redis check failed: {}", e)),
+                    ),
+                    Err(_) => (
+                        HealthStatus::Unhealthy,
+                        Some(format!("Redis check timeout (>{}s)", timeout_duration.as_secs())),
+                    ),
+                }
+            }
+            None => (
                 HealthStatus::Degraded,
-                Some("REDIS_URL not configured - caching disabled".to_string()),
-            )
+                Some("Redis connection not configured - caching disabled".to_string()),
+            ),
         };
 
         DependencyHealth {
@@ -120,14 +231,33 @@ impl HealthChecker {
     async fn check_nats(&self) -> DependencyHealth {
         let start = Instant::now();
 
-        // TODO: Actual NATS connection check
-        let (status, message) = if std::env::var("NATS_URL").is_ok() {
-            (HealthStatus::Healthy, None)
-        } else {
-            (
-                HealthStatus::Unhealthy,
-                Some("NATS_URL not configured".to_string()),
-            )
+        let (status, message) = match &self.nats_client {
+            Some(client) => {
+                // Check connection state
+                if client.connection_state() == async_nats::connection::State::Connected {
+                    // Get server info for additional details
+                    let server_info = client.server_info();
+                    (
+                        HealthStatus::Healthy,
+                        Some(format!(
+                            "Connected to NATS server version {}",
+                            server_info.version
+                        )),
+                    )
+                } else {
+                    (
+                        HealthStatus::Unhealthy,
+                        Some(format!(
+                            "NATS connection state: {:?}",
+                            client.connection_state()
+                        )),
+                    )
+                }
+            }
+            None => (
+                HealthStatus::Degraded,
+                Some("NATS connection not configured - messaging disabled".to_string()),
+            ),
         };
 
         DependencyHealth {

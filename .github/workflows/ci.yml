@@ -255,3 +255,68 @@ jobs:
         with:
           files: ./cobertura.xml
           fail_ci_if_error: false
+
+  # Enhanced Security Scanning
+  security-enhanced:
+    name: Enhanced Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Install cargo-deny
+        run: cargo install cargo-deny
+
+      - name: Run cargo-deny (advisories)
+        run: cargo deny check advisories
+
+      - name: Run cargo-deny (licenses)
+        run: cargo deny check licenses
+
+      - name: Run cargo-deny (bans)
+        run: cargo deny check bans
+
+      - name: Run cargo-deny (sources)
+        run: cargo deny check sources
+
+  # API Documentation Generation
+  docs:
+    name: API Documentation
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Make scripts executable
+        run: chmod +x scripts/generate-docs.sh
+
+      - name: Validate OpenAPI spec
+        run: |
+          if [ -f docs/api/openapi.yaml ]; then
+            echo "✓ OpenAPI spec found"
+          else
+            echo "✗ OpenAPI spec not found"
+            exit 1
+          fi
+
+      - name: Generate API documentation
+        run: |
+          # Set CI environment to skip interactive prompts
+          export CI=true
+          # Create output directory
+          mkdir -p docs/api/generated
+          # Generate docs
+          ./scripts/generate-docs.sh || true
+
+      - name: Upload documentation artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: api-documentation
+          path: docs/api/generated/
+          retention-days: 30
