@@ -265,6 +265,211 @@ impl CacheService {
             cached_statuses: status_count,
         })
     }
+
+    // ========================================================================
+    // PHASE 4: Redis Pipelining for Performance Optimization
+    // ========================================================================
+
+    /// Cache multiple devices using Redis pipelining for better performance
+    ///
+    /// # Arguments
+    /// * `devices` - Vector of devices to cache
+    ///
+    /// # Returns
+    /// * `Result<()>` - Success or error
+    ///
+    /// # Performance
+    /// Using pipelining reduces network round-trips from N to 1 for N devices
+    pub async fn cache_devices_batch(&mut self, devices: &[Device]) -> UaipResult<()> {
+        use redis::pipe;
+
+        let mut pipeline = pipe();
+        pipeline.atomic();
+
+        for device in devices {
+            let key = format!("{}device:{}", self.config.key_prefix, device.device_id);
+            let value = serde_json::to_string(device).map_err(UaipError::SerializationError)?;
+            pipeline.set_ex(&key, value, self.config.device_ttl);
+        }
+
+        pipeline
+            .query_async::<_, ()>(&mut self.connection)
+            .await
+            .map_err(|e| UaipError::DatabaseError(format!("Redis pipeline error: {}", e)))?;
+
+        Ok(())
+    }
+
+    /// Get multiple devices using Redis pipelining
+    ///
+    /// # Arguments
+    /// * `device_ids` - Vector of device identifiers
+    ///
+    /// # Returns
+    /// * `Result<Vec<Option<Device>>>` - Vector of cached devices (None if not found)
+    ///
+    /// # Performance
+    /// Using pipelining reduces network round-trips from N to 1 for N device IDs
+    pub async fn get_devices_batch(&mut self, device_ids: &[String]) -> UaipResult<Vec<Option<Device>>> {
+        use redis::pipe;
+
+        let mut pipeline = pipe();
+
+        for device_id in device_ids {
+            let key = format!("{}device:{}", self.config.key_prefix, device_id);
+            pipeline.get(&key);
+        }
+
+        let results: Vec<Option<String>> = pipeline
+            .query_async(&mut self.connection)
+            .await
+            .map_err(|e| UaipError::DatabaseError(format!("Redis pipeline error: {}", e)))?;
+
+        let mut devices = Vec::with_capacity(results.len());
+
+        for result in results {
+            match result {
+                Some(json) => {
+                    let device: Device =
+                        serde_json::from_str(&json).map_err(UaipError::SerializationError)?;
+                    devices.push(Some(device));
+                }
+                None => devices.push(None),
+            }
+        }
+
+        Ok(devices)
+    }
+
+    /// Cache multiple device statuses using Redis pipelining
+    ///
+    /// # Arguments
+    /// * `statuses` - Vector of (device_id, status, last_seen) tuples
+    ///
+    /// # Returns
+    /// * `Result<()>` - Success or error
+    pub async fn cache_device_statuses_batch(
+        &mut self,
+        statuses: &[(String, DeviceStatus, Option<DateTime<Utc>>)],
+    ) -> UaipResult<()> {
+        use redis::pipe;
+
+        let mut pipeline = pipe();
+        pipeline.atomic();
+
+        for (device_id, status, last_seen) in statuses {
+            let key = format!("{}status:{}", self.config.key_prefix, device_id);
+
+            let state = CachedDeviceState {
+                device_id: device_id.clone(),
+                status: *status,
+                last_seen: *last_seen,
+                cached_at: Utc::now(),
+            };
+
+            let value = serde_json::to_string(&state).map_err(UaipError::SerializationError)?;
+            pipeline.set_ex(&key, value, self.config.status_ttl);
+        }
+
+        pipeline
+            .query_async::<_, ()>(&mut self.connection)
+            .await
+            .map_err(|e| UaipError::DatabaseError(format!("Redis pipeline error: {}", e)))?;
+
+        Ok(())
+    }
+
+    /// Get multiple device statuses using Redis pipelining
+    ///
+    /// # Arguments
+    /// * `device_ids` - Vector of device identifiers
+    ///
+    /// # Returns
+    /// * `Result<Vec<Option<CachedDeviceState>>>` - Vector of cached statuses
+    pub async fn get_device_statuses_batch(
+        &mut self,
+        device_ids: &[String],
+    ) -> UaipResult<Vec<Option<CachedDeviceState>>> {
+        use redis::pipe;
+
+        let mut pipeline = pipe();
+
+        for device_id in device_ids {
+            let key = format!("{}status:{}", self.config.key_prefix, device_id);
+            pipeline.get(&key);
+        }
+
+        let results: Vec<Option<String>> = pipeline
+            .query_async(&mut self.connection)
+            .await
+            .map_err(|e| UaipError::DatabaseError(format!("Redis pipeline error: {}", e)))?;
+
+        let mut statuses = Vec::with_capacity(results.len());
+
+        for result in results {
+            match result {
+                Some(json) => {
+                    let state: CachedDeviceState =
+                        serde_json::from_str(&json).map_err(UaipError::SerializationError)?;
+                    statuses.push(Some(state));
+                }
+                None => statuses.push(None),
+            }
+        }
+
+        Ok(statuses)
+    }
+
+    /// Invalidate multiple devices using Redis pipelining
+    ///
+    /// # Arguments
+    /// * `device_ids` - Vector of device identifiers
+    ///
+    /// # Returns
+    /// * `Result<usize>` - Number of keys deleted
+    pub async fn invalidate_devices_batch(&mut self, device_ids: &[String]) -> UaipResult<usize> {
+        use redis::pipe;
+
+        let mut keys_to_delete = Vec::with_capacity(device_ids.len() * 2);
+
+        for device_id in device_ids {
+            keys_to_delete.push(format!("{}device:{}", self.config.key_prefix, device_id));
+            keys_to_delete.push(format!("{}status:{}", self.config.key_prefix, device_id));
+        }
+
+        let deleted: usize = self
+            .connection
+            .del(&keys_to_delete)
+            .await
+            .map_err(|e| UaipError::DatabaseError(format!("Redis error: {}", e)))?;
+
+        Ok(deleted)
+    }
+
+    /// Check if multiple devices are cached using Redis pipelining
+    ///
+    /// # Arguments
+    /// * `device_ids` - Vector of device identifiers
+    ///
+    /// # Returns
+    /// * `Result<Vec<bool>>` - Vector indicating if each device is cached
+    pub async fn are_devices_cached(&mut self, device_ids: &[String]) -> UaipResult<Vec<bool>> {
+        use redis::pipe;
+
+        let mut pipeline = pipe();
+
+        for device_id in device_ids {
+            let key = format!("{}device:{}", self.config.key_prefix, device_id);
+            pipeline.exists(&key);
+        }
+
+        let results: Vec<bool> = pipeline
+            .query_async(&mut self.connection)
+            .await
+            .map_err(|e| UaipError::DatabaseError(format!("Redis pipeline error: {}", e)))?;
+
+        Ok(results)
+    }
 }
 
 /// Cache statistics
