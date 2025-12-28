@@ -6,6 +6,9 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+/// Device ID type alias
+pub type DeviceId = String;
+
 /// Device information structure
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct DeviceInfo {

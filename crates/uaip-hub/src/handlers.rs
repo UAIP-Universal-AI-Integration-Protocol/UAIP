@@ -4,9 +4,11 @@ use axum::{Extension, Json};
 use std::sync::Arc;
 
 pub mod adapters;
+pub mod ai;
 pub mod auth;
 pub mod commands;
 pub mod devices;
+pub mod media;
 pub mod metrics;
 
 use crate::health::{HealthCheckResponse, HealthChecker};

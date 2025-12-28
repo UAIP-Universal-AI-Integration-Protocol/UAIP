@@ -3,7 +3,7 @@
 use axum::{
     http::StatusCode,
     response::IntoResponse,
-    routing::{get, post},
+    routing::{delete, get, post},
     Json, Router,
 };
 use serde::{Deserialize, Serialize};
@@ -102,6 +102,37 @@ pub fn create_router(state: Arc<AppState>) -> Router {
         .route(
             "/api/v1/adapters/webrtc/offer",
             post(handlers::adapters::create_webrtc_offer),
+        )
+        // AI Agents
+        .route(
+            "/api/v1/ai/agents/register",
+            post(handlers::ai::register_ai_agent),
+        )
+        .route("/api/v1/ai/agents", get(handlers::ai::list_ai_agents))
+        .route(
+            "/api/v1/ai/sessions",
+            post(handlers::ai::create_ai_session),
+        )
+        .route(
+            "/api/v1/ai/sessions/:session_id",
+            get(handlers::ai::get_ai_session),
+        )
+        // Media Management
+        .route(
+            "/api/v1/media/upload",
+            post(handlers::media::upload_media),
+        )
+        .route("/api/v1/media", get(handlers::media::list_media))
+        .route("/api/v1/media/:id", get(handlers::media::get_media))
+        .route("/api/v1/media/:id", delete(handlers::media::delete_media))
+        // Streaming
+        .route(
+            "/api/v1/streaming/sessions",
+            post(handlers::media::create_stream_session),
+        )
+        .route(
+            "/api/v1/streaming/sessions/:id",
+            get(handlers::media::get_stream_session),
         )
         // WebSocket
         .route("/ws", get(websocket::ws_handler))
