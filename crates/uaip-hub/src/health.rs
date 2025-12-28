@@ -334,7 +334,6 @@ mod tests {
 
         assert!(!health.version.is_empty());
         assert!(!health.timestamp.is_empty());
-        assert!(health.uptime_seconds >= 0);
         assert!(!health.dependencies.is_empty());
     }
 

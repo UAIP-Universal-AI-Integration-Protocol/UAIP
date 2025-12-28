@@ -335,7 +335,7 @@ pub async fn send_command(
     })?;
 
     // Determine priority
-    let priority = request.priority.as_ref().map(|p| p.as_str()).unwrap_or("normal");
+    let priority = request.priority.as_deref().unwrap_or("normal");
     let priority_level = match priority {
         "low" => "low",
         "normal" => "normal",

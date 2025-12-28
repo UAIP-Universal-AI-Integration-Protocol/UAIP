@@ -113,7 +113,7 @@ mod tests {
 
     #[test]
     fn test_log_error() {
-        let error = std::io::Error::new(std::io::ErrorKind::Other, "test error");
+        let error = std::io::Error::other("test error");
         log_error(&error, "test context");
         // Should not panic
     }

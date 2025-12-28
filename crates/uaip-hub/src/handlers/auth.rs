@@ -161,7 +161,7 @@ pub async fn login(
     sqlx::query(
         "UPDATE ai_agents SET last_authenticated = NOW() WHERE id = $1",
     )
-    .bind(&agent.id)
+    .bind(agent.id)
     .execute(db_pool)
     .await
     .map_err(|e| {

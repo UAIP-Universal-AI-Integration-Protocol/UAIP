@@ -81,8 +81,8 @@ pub enum WsMessage {
     Text(String),
     /// Binary message
     Binary(Vec<u8>),
-    /// UAIP message
-    Uaip(UaipMessage),
+    /// UAIP message (boxed to reduce enum size)
+    Uaip(Box<UaipMessage>),
 }
 
 /// Message handler callback type
