@@ -20,14 +20,18 @@ db-urls = ["https://github.com/rustsec/advisory-db"]
 # - Critical: Deny only critical
 vulnerability = "deny"
 # Unmaintained crates
-unmaintained = "warn"
+# Note: Commented out due to cargo-deny version compatibility
+# unmaintained = "warn"
 # Yanked crates
 yanked = "deny"
 # Security notices
 notice = "warn"
 # Ignore specific advisories (use with caution!)
 ignore = [
-    # Example: "RUSTSEC-2020-0001",
+    # RUSTSEC-2023-0071: RSA 0.9.9 - Marvin Attack vulnerability
+    # This is a transitive dependency from sqlx-mysql. No fix available upstream yet.
+    # Tracking issue: https://github.com/launchbadge/sqlx/issues/3189
+    "RUSTSEC-2023-0071",
 ]
 
 [licenses]
