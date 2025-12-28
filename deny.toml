@@ -17,6 +17,12 @@ ignore = [
     # This is a transitive dependency from sqlx-mysql. No fix available upstream yet.
     # Tracking issue: https://github.com/launchbadge/sqlx/issues/3189
     "RUSTSEC-2023-0071",
+
+    # RUSTSEC-2025-0134: rustls-pemfile is unmaintained
+    # Transitive dependency from async-nats 0.33, reqwest 0.11, rumqttc 0.23
+    # Migration to rustls-pki-types requires updating these dependencies
+    # TODO: Update to async-nats 0.45+, reqwest 0.12+, rumqttc 0.25+ in future PR
+    "RUSTSEC-2025-0134",
 ]
 
 [licenses]
