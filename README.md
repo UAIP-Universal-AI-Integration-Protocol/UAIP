@@ -16,7 +16,7 @@
 
 **Created by [Hakille](https://github.com/Hakille)** | Built with Google/Apple Engineering Standards
 
-[Features](#-key-features) • [Quick Start](#-quick-start) • [Documentation](#-documentation) • [Architecture](#-architecture) • [Contributing](#-contributing)
+[Features](#-key-features) • [Quick Start](#-quick-start) • [Documentation](#-documentation) • [Architecture](#-architecture) • [Contributing](#-contributing) • [🪟 Windows Guide](WINDOWS.md)
 
 </div>
 
@@ -92,18 +92,53 @@
 ### Prerequisites
 
 - **Rust 1.70+** - [Install Rust](https://rustup.rs/)
-- **Docker & Docker Compose** - [Install Docker](https://docs.docker.com/get-docker/)
+- **Docker Desktop** - [Install Docker Desktop](https://docs.docker.com/get-docker/)
+- **Git** - [Install Git](https://git-scm.com/downloads)
 
-### One-Command Installation
+### Installation
+
+#### 1. Clone the Repository
 
 ```bash
-# Clone the repository
 git clone https://github.com/UAIP-Universal-AI-Integration-Protocol/UAIP.git
 cd UAIP
+```
 
-# Start everything (infrastructure + migrations + hub)
+#### 2. Start UAIP Hub
+
+<details open>
+<summary><b>🪟 Windows (PowerShell - Recommended)</b></summary>
+
+```powershell
+.\quick-start.ps1
+```
+
+**Note**: If you get an execution policy error, run:
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+</details>
+
+<details>
+<summary><b>🪟 Windows (Command Prompt)</b></summary>
+
+```cmd
+quick-start.bat
+```
+
+</details>
+
+<details>
+<summary><b>🐧 Linux / 🍎 macOS</b></summary>
+
+```bash
 make quick-start
 ```
+
+</details>
+
+**First Run**: Docker will build the image (~5-10 minutes). Subsequent starts take ~30 seconds.
 
 **That's it!** 🎉 Your UAIP Hub is now running.
 
@@ -117,6 +152,70 @@ make quick-start
 | 🗄️ PostgreSQL | localhost:5432 | uaip / uaip_password_dev |
 | 🔴 Redis | localhost:6379 | - |
 | 📨 NATS | localhost:4222 | - |
+
+### 🔧 Troubleshooting
+
+<details>
+<summary><b>Windows: PowerShell Execution Policy Error</b></summary>
+
+If you see `cannot be loaded because running scripts is disabled`:
+
+```powershell
+# Open PowerShell as Administrator and run:
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+# Then try again:
+.\quick-start.ps1
+```
+
+</details>
+
+<details>
+<summary><b>Windows: Script doesn't work in CMD</b></summary>
+
+Make sure you're using the `.bat` file in Command Prompt:
+
+```cmd
+quick-start.bat
+```
+
+If it still doesn't work, use PowerShell instead (recommended):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\quick-start.ps1
+```
+
+</details>
+
+<details>
+<summary><b>Docker is not running</b></summary>
+
+Make sure Docker Desktop is running:
+1. Open Docker Desktop
+2. Wait for it to start completely (icon in system tray should be stable)
+3. Run the quick-start script again
+
+</details>
+
+<details>
+<summary><b>Port already in use</b></summary>
+
+If you see "port is already allocated":
+
+```bash
+# Stop all services
+docker-compose -f docker-compose.dev.yml down
+
+# Check what's using the port
+netstat -ano | findstr :8443    # Windows
+lsof -i :8443                   # Linux/Mac
+
+# Start again
+.\quick-start.ps1   # Windows PowerShell
+make quick-start    # Linux/Mac
+```
+
+</details>
 
 ---
 
