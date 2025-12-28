@@ -186,8 +186,8 @@ impl HealthChecker {
 
                 // Try to get a connection and execute PING with timeout
                 let check_future = async {
-                    let mut conn = client.get_async_connection().await?;
-                    redis::cmd("PING").query_async::<_, String>(&mut conn).await
+                    let mut conn = client.get_multiplexed_async_connection().await?;
+                    redis::cmd("PING").query_async::<String>(&mut conn).await
                 };
 
                 match tokio::time::timeout(timeout_duration, check_future).await {

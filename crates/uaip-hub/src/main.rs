@@ -69,7 +69,7 @@ async fn main() -> Result<()> {
             match redis::Client::open(url.as_str()) {
                 Ok(client) => {
                     // Test the connection
-                    match client.get_async_connection().await {
+                    match client.get_multiplexed_async_connection().await {
                         Ok(_) => {
                             tracing::info!("Redis connection established");
                             Some(client)
