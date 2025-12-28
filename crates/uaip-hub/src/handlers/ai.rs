@@ -13,10 +13,7 @@ use tracing::{error, info};
 use uuid::Uuid;
 
 use uaip_core::{
-    ai_agent::{
-        AgentConfig, AgentType, AiAgent, AiSession, InteractionType,
-        SessionState,
-    },
+    ai_agent::{AgentConfig, AgentType, AiAgent, AiSession, InteractionType, SessionState},
     device::{Capability, DeviceId},
 };
 
@@ -103,7 +100,7 @@ pub async fn list_ai_agents(
             SELECT id, name, agent_type, version, provider, created_at
             FROM ai_agents
             ORDER BY created_at DESC
-            "#
+            "#,
         )
         .fetch_all(pool)
         .await
@@ -115,7 +112,8 @@ pub async fn list_ai_agents(
                     let agent_type_str: String = record.try_get("agent_type").unwrap_or_default();
                     let version: String = record.try_get("version").unwrap_or_default();
                     let provider: String = record.try_get("provider").unwrap_or_default();
-                    let created_at: chrono::NaiveDateTime = record.try_get("created_at").unwrap_or_default();
+                    let created_at: chrono::NaiveDateTime =
+                        record.try_get("created_at").unwrap_or_default();
 
                     // Parse agent_type from string
                     let agent_type = match agent_type_str.as_str() {
@@ -146,10 +144,7 @@ pub async fn list_ai_agents(
     }
 
     let total = agents.len();
-    Ok(Json(AgentListResponse {
-        agents,
-        total,
-    }))
+    Ok(Json(AgentListResponse { agents, total }))
 }
 
 /// Create a new AI session

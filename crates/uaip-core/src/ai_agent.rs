@@ -286,8 +286,8 @@ impl SessionStats {
 
         // Update running average
         let total_responses = self.responses_received as f64;
-        self.avg_response_time_ms =
-            (self.avg_response_time_ms * (total_responses - 1.0) + response_time_ms as f64)
+        self.avg_response_time_ms = (self.avg_response_time_ms * (total_responses - 1.0)
+            + response_time_ms as f64)
             / total_responses;
     }
 

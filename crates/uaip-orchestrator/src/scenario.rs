@@ -354,9 +354,10 @@ impl ScenarioEngine {
             execution.scenario_id.clone()
         };
 
-        let scenario = self.scenarios.get(&scenario_id).ok_or_else(|| {
-            UaipError::NotFound(format!("Scenario not found: {}", scenario_id))
-        })?;
+        let scenario = self
+            .scenarios
+            .get(&scenario_id)
+            .ok_or_else(|| UaipError::NotFound(format!("Scenario not found: {}", scenario_id)))?;
 
         let actions = scenario.actions.clone();
         let execution = self.executions.get_mut(execution_id).unwrap();
@@ -499,7 +500,10 @@ mod tests {
                 action: ScenarioAction::SendNotification,
                 parameters: {
                     let mut params = HashMap::new();
-                    params.insert("message".to_string(), serde_json::json!("Temperature alert"));
+                    params.insert(
+                        "message".to_string(),
+                        serde_json::json!("Temperature alert"),
+                    );
                     params
                 },
                 wait: true,

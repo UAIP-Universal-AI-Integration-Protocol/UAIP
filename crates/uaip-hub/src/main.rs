@@ -156,8 +156,7 @@ async fn main() -> Result<()> {
     });
 
     // Create router with all middleware
-    let app = create_router(state)
-        .layer(axum::Extension(health_checker));
+    let app = create_router(state).layer(axum::Extension(health_checker));
 
     // Bind to address
     let addr = SocketAddr::from(([127, 0, 0, 1], 8443));

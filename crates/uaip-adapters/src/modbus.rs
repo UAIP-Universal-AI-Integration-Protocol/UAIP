@@ -10,9 +10,7 @@ use tokio::net::TcpStream;
 use tokio::time::timeout;
 use tracing::{debug, error, info};
 
-use uaip_core::{
-    error::{Result, UaipError},
-};
+use uaip_core::error::{Result, UaipError};
 
 /// Modbus function codes
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -110,13 +108,9 @@ impl ModbusAdapter {
 
     /// Connect to Modbus server
     async fn connect(&self) -> Result<TcpStream> {
-        let addr: SocketAddr = self
-            .config
-            .server_address
-            .parse()
-            .map_err(|e| {
-                UaipError::InvalidConfiguration(format!("Invalid server address: {}", e))
-            })?;
+        let addr: SocketAddr = self.config.server_address.parse().map_err(|e| {
+            UaipError::InvalidConfiguration(format!("Invalid server address: {}", e))
+        })?;
 
         let stream = timeout(
             Duration::from_secs(self.config.connection_timeout),
@@ -323,9 +317,7 @@ impl ModbusAdapter {
 
         // Validate response
         if response.len() < 8 {
-            return Err(UaipError::InvalidMessage(
-                "Response too short".to_string(),
-            ));
+            return Err(UaipError::InvalidMessage("Response too short".to_string()));
         }
 
         // Check transaction ID
@@ -349,9 +341,7 @@ impl ModbusAdapter {
 
         let byte_count = pdu[1] as usize;
         if pdu.len() < 2 + byte_count {
-            return Err(UaipError::InvalidMessage(
-                "Incomplete response".to_string(),
-            ));
+            return Err(UaipError::InvalidMessage("Incomplete response".to_string()));
         }
 
         let mut coils = Vec::new();
@@ -374,15 +364,11 @@ impl ModbusAdapter {
 
         let byte_count = pdu[1] as usize;
         if byte_count != (count * 2) as usize {
-            return Err(UaipError::InvalidMessage(
-                "Byte count mismatch".to_string(),
-            ));
+            return Err(UaipError::InvalidMessage("Byte count mismatch".to_string()));
         }
 
         if pdu.len() < 2 + byte_count {
-            return Err(UaipError::InvalidMessage(
-                "Incomplete response".to_string(),
-            ));
+            return Err(UaipError::InvalidMessage("Incomplete response".to_string()));
         }
 
         let mut registers = Vec::new();
@@ -423,10 +409,7 @@ mod tests {
 
     #[test]
     fn test_function_code_conversion() {
-        assert_eq!(
-            FunctionCode::from_u8(0x01),
-            Some(FunctionCode::ReadCoils)
-        );
+        assert_eq!(FunctionCode::from_u8(0x01), Some(FunctionCode::ReadCoils));
         assert_eq!(
             FunctionCode::from_u8(0x03),
             Some(FunctionCode::ReadHoldingRegisters)

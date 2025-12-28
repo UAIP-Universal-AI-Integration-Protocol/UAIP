@@ -39,18 +39,22 @@ pub async fn login(
     }
 
     // Validate client_secret is provided
-    let client_secret = request.client_secret.as_ref().ok_or_else(|| {
-        UaipError::InvalidParameter("client_secret is required".to_string())
-    })?;
+    let client_secret = request
+        .client_secret
+        .as_ref()
+        .ok_or_else(|| UaipError::InvalidParameter("client_secret is required".to_string()))?;
 
     if client_secret.is_empty() {
-        return Err(UaipError::InvalidParameter("client_secret cannot be empty".to_string()).into());
+        return Err(
+            UaipError::InvalidParameter("client_secret cannot be empty".to_string()).into(),
+        );
     }
 
     // Get database pool (or return error if not configured)
-    let db_pool = state.db_pool.as_ref().ok_or_else(|| {
-        UaipError::InternalError("Database not configured".to_string())
-    })?;
+    let db_pool = state
+        .db_pool
+        .as_ref()
+        .ok_or_else(|| UaipError::InternalError("Database not configured".to_string()))?;
 
     // Query the AI agent from the database
     let agent = sqlx::query_as::<_, AiAgent>(
@@ -91,17 +95,13 @@ pub async fn login(
     }
 
     // Verify the client secret using bcrypt
-    let password_valid = bcrypt::verify(client_secret, &agent.client_secret_hash)
-        .map_err(|e| {
-            tracing::error!("Password verification error: {}", e);
-            UaipError::InternalError("Authentication failed".to_string())
-        })?;
+    let password_valid = bcrypt::verify(client_secret, &agent.client_secret_hash).map_err(|e| {
+        tracing::error!("Password verification error: {}", e);
+        UaipError::InternalError("Authentication failed".to_string())
+    })?;
 
     if !password_valid {
-        tracing::warn!(
-            "Invalid password for client_id: {}",
-            request.client_id
-        );
+        tracing::warn!("Invalid password for client_id: {}", request.client_id);
         // Log failed authentication
         log_audit_event(
             db_pool,
@@ -136,7 +136,12 @@ pub async fn login(
 
     // Generate access token
     let access_token = jwt_manager
-        .generate_token(&agent.id.to_string(), &agent.client_id, scopes.clone(), None)
+        .generate_token(
+            &agent.id.to_string(),
+            &agent.client_id,
+            scopes.clone(),
+            None,
+        )
         .map_err(|e| {
             tracing::error!("Failed to generate JWT token: {}", e);
             UaipError::InternalError("Failed to generate token".to_string())
@@ -151,24 +156,27 @@ pub async fn login(
     );
 
     let refresh_token = refresh_jwt_manager
-        .generate_token(&agent.id.to_string(), &agent.client_id, scopes.clone(), None)
+        .generate_token(
+            &agent.id.to_string(),
+            &agent.client_id,
+            scopes.clone(),
+            None,
+        )
         .map_err(|e| {
             tracing::error!("Failed to generate refresh token: {}", e);
             UaipError::InternalError("Failed to generate refresh token".to_string())
         })?;
 
     // Update last_authenticated timestamp
-    sqlx::query(
-        "UPDATE ai_agents SET last_authenticated = NOW() WHERE id = $1",
-    )
-    .bind(agent.id)
-    .execute(db_pool)
-    .await
-    .map_err(|e| {
-        tracing::error!("Failed to update last_authenticated: {}", e);
-        // Don't fail authentication for this
-    })
-    .ok();
+    sqlx::query("UPDATE ai_agents SET last_authenticated = NOW() WHERE id = $1")
+        .bind(agent.id)
+        .execute(db_pool)
+        .await
+        .map_err(|e| {
+            tracing::error!("Failed to update last_authenticated: {}", e);
+            // Don't fail authentication for this
+        })
+        .ok();
 
     // Log successful authentication
     log_audit_event(

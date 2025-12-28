@@ -76,16 +76,19 @@ pub async fn list_devices(
     Query(query): Query<DeviceListQuery>,
 ) -> ApiResult<Json<DeviceListResponse>> {
     // Get database pool
-    let db_pool = state.db_pool.as_ref().ok_or_else(|| {
-        UaipError::InternalError("Database not configured".to_string())
-    })?;
+    let db_pool = state
+        .db_pool
+        .as_ref()
+        .ok_or_else(|| UaipError::InternalError("Database not configured".to_string()))?;
 
     // Validate pagination parameters
     if query.page < 1 {
         return Err(UaipError::InvalidParameter("page must be >= 1".to_string()).into());
     }
     if query.per_page < 1 || query.per_page > 100 {
-        return Err(UaipError::InvalidParameter("per_page must be between 1 and 100".to_string()).into());
+        return Err(
+            UaipError::InvalidParameter("per_page must be between 1 and 100".to_string()).into(),
+        );
     }
 
     // Validate sort_by field
@@ -94,14 +97,20 @@ pub async fn list_devices(
         return Err(UaipError::InvalidParameter(format!(
             "sort_by must be one of: {}",
             valid_sort_fields.join(", ")
-        )).into());
+        ))
+        .into());
     }
 
     // Validate sort_order
     let sort_order = match query.sort_order.to_lowercase().as_str() {
         "asc" => "ASC",
         "desc" => "DESC",
-        _ => return Err(UaipError::InvalidParameter("sort_order must be 'asc' or 'desc'".to_string()).into()),
+        _ => {
+            return Err(UaipError::InvalidParameter(
+                "sort_order must be 'asc' or 'desc'".to_string(),
+            )
+            .into())
+        }
     };
 
     // Build query with filters
@@ -142,23 +151,17 @@ pub async fn list_devices(
     );
 
     // Count query
-    let count_query = format!(
-        "SELECT COUNT(*) as count FROM devices {}",
-        where_clause
-    );
+    let count_query = format!("SELECT COUNT(*) as count FROM devices {}", where_clause);
 
     // Execute count query
     let mut count_query_builder = sqlx::query_scalar::<_, i64>(&count_query);
     for value in &bind_values {
         count_query_builder = count_query_builder.bind(value);
     }
-    let total = count_query_builder
-        .fetch_one(db_pool)
-        .await
-        .map_err(|e| {
-            tracing::error!("Failed to count devices: {}", e);
-            UaipError::InternalError("Failed to query devices".to_string())
-        })?;
+    let total = count_query_builder.fetch_one(db_pool).await.map_err(|e| {
+        tracing::error!("Failed to count devices: {}", e);
+        UaipError::InternalError("Failed to query devices".to_string())
+    })?;
 
     // Execute main query
     let mut query_builder = sqlx::query_as::<_, DeviceRow>(&sql_query);
@@ -167,13 +170,10 @@ pub async fn list_devices(
     }
     query_builder = query_builder.bind(query.per_page).bind(offset);
 
-    let devices = query_builder
-        .fetch_all(db_pool)
-        .await
-        .map_err(|e| {
-            tracing::error!("Failed to fetch devices: {}", e);
-            UaipError::InternalError("Failed to query devices".to_string())
-        })?;
+    let devices = query_builder.fetch_all(db_pool).await.map_err(|e| {
+        tracing::error!("Failed to fetch devices: {}", e);
+        UaipError::InternalError("Failed to query devices".to_string())
+    })?;
 
     // Transform to DeviceInfo
     let device_infos: Vec<DeviceInfo> = devices
@@ -217,27 +217,28 @@ pub async fn register_device(
     }
 
     // Get database pool
-    let db_pool = state.db_pool.as_ref().ok_or_else(|| {
-        UaipError::InternalError("Database not configured".to_string())
-    })?;
+    let db_pool = state
+        .db_pool
+        .as_ref()
+        .ok_or_else(|| UaipError::InternalError("Database not configured".to_string()))?;
 
     // Check if device already exists
-    let existing = sqlx::query_scalar::<_, i64>(
-        "SELECT COUNT(*) FROM devices WHERE device_id = $1"
-    )
-    .bind(&request.device_id)
-    .fetch_one(db_pool)
-    .await
-    .map_err(|e| {
-        tracing::error!("Failed to check device existence: {}", e);
-        UaipError::InternalError("Failed to check device".to_string())
-    })?;
+    let existing =
+        sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM devices WHERE device_id = $1")
+            .bind(&request.device_id)
+            .fetch_one(db_pool)
+            .await
+            .map_err(|e| {
+                tracing::error!("Failed to check device existence: {}", e);
+                UaipError::InternalError("Failed to check device".to_string())
+            })?;
 
     if existing > 0 {
         return Err(UaipError::InvalidParameter(format!(
             "Device with ID '{}' already exists",
             request.device_id
-        )).into());
+        ))
+        .into());
     }
 
     // Generate registration challenge
@@ -314,25 +315,24 @@ pub async fn send_command(
     }
 
     // Get database pool
-    let db_pool = state.db_pool.as_ref().ok_or_else(|| {
-        UaipError::InternalError("Database not configured".to_string())
-    })?;
+    let db_pool = state
+        .db_pool
+        .as_ref()
+        .ok_or_else(|| UaipError::InternalError("Database not configured".to_string()))?;
 
     // Verify device exists and get its UUID
-    let device_uuid: Option<sqlx::types::Uuid> = sqlx::query_scalar(
-        "SELECT id FROM devices WHERE device_id = $1"
-    )
-    .bind(&device_id)
-    .fetch_optional(db_pool)
-    .await
-    .map_err(|e| {
-        tracing::error!("Failed to query device: {}", e);
-        UaipError::InternalError("Failed to verify device".to_string())
-    })?;
+    let device_uuid: Option<sqlx::types::Uuid> =
+        sqlx::query_scalar("SELECT id FROM devices WHERE device_id = $1")
+            .bind(&device_id)
+            .fetch_optional(db_pool)
+            .await
+            .map_err(|e| {
+                tracing::error!("Failed to query device: {}", e);
+                UaipError::InternalError("Failed to verify device".to_string())
+            })?;
 
-    let _device_uuid = device_uuid.ok_or_else(|| {
-        UaipError::DeviceNotFound(format!("Device '{}' not found", device_id))
-    })?;
+    let _device_uuid = device_uuid
+        .ok_or_else(|| UaipError::DeviceNotFound(format!("Device '{}' not found", device_id)))?;
 
     // Determine priority
     let priority = request.priority.as_deref().unwrap_or("normal");
@@ -353,7 +353,7 @@ pub async fn send_command(
             id, message_id, correlation_id, sender_id, recipient_id,
             action, qos_level, priority, status, payload
          )
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)"
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
     )
     .bind(uuid::Uuid::new_v4())
     .bind(&message_id)

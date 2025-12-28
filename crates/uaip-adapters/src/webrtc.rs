@@ -9,9 +9,7 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 use tracing::{debug, info};
 
-use uaip_core::{
-    error::{Result, UaipError},
-};
+use uaip_core::error::{Result, UaipError};
 
 /// WebRTC ICE server configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -37,7 +35,11 @@ impl IceServer {
     }
 
     /// Create a TURN server configuration with authentication
-    pub fn turn(url: impl Into<String>, username: impl Into<String>, credential: impl Into<String>) -> Self {
+    pub fn turn(
+        url: impl Into<String>,
+        username: impl Into<String>,
+        credential: impl Into<String>,
+    ) -> Self {
         Self {
             urls: vec![url.into()],
             username: Some(username.into()),
@@ -249,7 +251,11 @@ impl DataChannel {
             ));
         }
 
-        debug!("Sending {} bytes on data channel: {}", data.len(), self.label);
+        debug!(
+            "Sending {} bytes on data channel: {}",
+            data.len(),
+            self.label
+        );
         Ok(())
     }
 
@@ -294,7 +300,10 @@ pub struct WebRtcAdapter {
 impl WebRtcAdapter {
     /// Create a new WebRTC adapter
     pub fn new(config: WebRtcConfig) -> Result<Self> {
-        info!("WebRTC adapter created with {} ICE servers", config.ice_servers.len());
+        info!(
+            "WebRTC adapter created with {} ICE servers",
+            config.ice_servers.len()
+        );
 
         Ok(Self {
             config,
@@ -344,9 +353,7 @@ impl WebRtcAdapter {
         // Check if we have remote offer
         let remote_desc = self.remote_description.read().await;
         if remote_desc.is_none() {
-            return Err(UaipError::InvalidMessage(
-                "No remote offer set".to_string(),
-            ));
+            return Err(UaipError::InvalidMessage("No remote offer set".to_string()));
         }
 
         // Update signaling state
@@ -463,12 +470,9 @@ impl WebRtcAdapter {
         let state = self.connection_state().await;
         match state {
             ConnectionState::Connected => Ok(()),
-            ConnectionState::Closed | ConnectionState::Failed => {
-                Err(UaipError::ConnectionError(format!(
-                    "Connection in state: {:?}",
-                    state
-                )))
-            }
+            ConnectionState::Closed | ConnectionState::Failed => Err(UaipError::ConnectionError(
+                format!("Connection in state: {:?}", state),
+            )),
             _ => Ok(()), // New, Connecting, Disconnected are acceptable
         }
     }
@@ -607,9 +611,6 @@ mod tests {
 
         adapter.close().await.unwrap();
         assert_eq!(adapter.connection_state().await, ConnectionState::Closed);
-        assert_eq!(
-            adapter.signaling_state().await,
-            SignalingState::Closed
-        );
+        assert_eq!(adapter.signaling_state().await, SignalingState::Closed);
     }
 }

@@ -390,9 +390,10 @@ impl WorkflowEngine {
             execution.workflow_id.clone()
         };
 
-        let workflow = self.workflows.get(&workflow_id).ok_or_else(|| {
-            UaipError::NotFound(format!("Workflow not found: {}", workflow_id))
-        })?;
+        let workflow = self
+            .workflows
+            .get(&workflow_id)
+            .ok_or_else(|| UaipError::NotFound(format!("Workflow not found: {}", workflow_id)))?;
 
         let execution = self.executions.get_mut(execution_id).unwrap();
 
@@ -633,10 +634,7 @@ mod tests {
                     step_type: StepType::Action,
                     config: {
                         let mut config = HashMap::new();
-                        config.insert(
-                            "action_type".to_string(),
-                            serde_json::json!("send_command"),
-                        );
+                        config.insert("action_type".to_string(), serde_json::json!("send_command"));
                         config
                     },
                     children: vec![],

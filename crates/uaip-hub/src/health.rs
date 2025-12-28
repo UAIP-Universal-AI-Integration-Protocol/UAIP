@@ -133,11 +133,8 @@ impl HealthChecker {
             Some(pool) => {
                 // Try to execute a simple query with timeout (circuit breaker pattern)
                 let timeout_duration = Duration::from_secs(5);
-                match tokio::time::timeout(
-                    timeout_duration,
-                    sqlx::query("SELECT 1").execute(pool),
-                )
-                .await
+                match tokio::time::timeout(timeout_duration, sqlx::query("SELECT 1").execute(pool))
+                    .await
                 {
                     Ok(Ok(_)) => {
                         // Also check pool statistics
@@ -158,7 +155,10 @@ impl HealthChecker {
                     ),
                     Err(_) => (
                         HealthStatus::Unhealthy,
-                        Some(format!("Database query timeout (>{}s)", timeout_duration.as_secs())),
+                        Some(format!(
+                            "Database query timeout (>{}s)",
+                            timeout_duration.as_secs()
+                        )),
                     ),
                 }
             }
@@ -187,9 +187,7 @@ impl HealthChecker {
                 // Try to get a connection and execute PING with timeout
                 let check_future = async {
                     let mut conn = client.get_async_connection().await?;
-                    redis::cmd("PING")
-                        .query_async::<_, String>(&mut conn)
-                        .await
+                    redis::cmd("PING").query_async::<_, String>(&mut conn).await
                 };
 
                 match tokio::time::timeout(timeout_duration, check_future).await {
@@ -209,7 +207,10 @@ impl HealthChecker {
                     ),
                     Err(_) => (
                         HealthStatus::Unhealthy,
-                        Some(format!("Redis check timeout (>{}s)", timeout_duration.as_secs())),
+                        Some(format!(
+                            "Redis check timeout (>{}s)",
+                            timeout_duration.as_secs()
+                        )),
                     ),
                 }
             }

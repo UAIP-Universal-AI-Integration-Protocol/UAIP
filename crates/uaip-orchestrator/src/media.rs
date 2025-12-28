@@ -440,17 +440,13 @@ pub enum ProcessingOperation {
         maintain_aspect: bool,
     },
     /// Extract audio from video
-    ExtractAudio {
-        format: String,
-    },
+    ExtractAudio { format: String },
     /// Compress file
     Compress {
         quality: u8, // 1-100
     },
     /// Generate streaming manifests
-    PrepareStream {
-        protocol: StreamProtocol,
-    },
+    PrepareStream { protocol: StreamProtocol },
     /// Extract metadata
     AnalyzeMetadata,
 }
@@ -521,11 +517,7 @@ mod tests {
 
     #[test]
     fn test_media_file_creation() {
-        let media = MediaFile::new(
-            "test.mp4".to_string(),
-            MediaType::Video,
-            "mp4".to_string(),
-        );
+        let media = MediaFile::new("test.mp4".to_string(), MediaType::Video, "mp4".to_string());
 
         assert_eq!(media.filename, "test.mp4");
         assert_eq!(media.media_type, MediaType::Video);

@@ -152,10 +152,7 @@ impl AiSessionManager {
         }
 
         session.add_device(device_id.clone());
-        debug!(
-            "Added device {} to session {}",
-            device_id, session_id
-        );
+        debug!("Added device {} to session {}", device_id, session_id);
 
         Ok(())
     }
@@ -173,10 +170,7 @@ impl AiSessionManager {
         })?;
 
         session.remove_device(device_id);
-        debug!(
-            "Removed device {} from session {}",
-            device_id, session_id
-        );
+        debug!("Removed device {} from session {}", device_id, session_id);
 
         Ok(())
     }
@@ -271,7 +265,10 @@ impl AiSessionManager {
     }
 
     /// Get session statistics
-    pub async fn get_session_stats(&self, session_id: &Uuid) -> Option<uaip_core::ai_agent::SessionStats> {
+    pub async fn get_session_stats(
+        &self,
+        session_id: &Uuid,
+    ) -> Option<uaip_core::ai_agent::SessionStats> {
         self.sessions
             .read()
             .await

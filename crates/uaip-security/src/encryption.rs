@@ -47,8 +47,7 @@ impl EncryptionEngine {
         let mut key = [0u8; KEY_SIZE];
         OsRng.fill_bytes(&mut key);
 
-        let cipher = Aes256Gcm::new_from_slice(&key)
-            .expect("Invalid key length");
+        let cipher = Aes256Gcm::new_from_slice(&key).expect("Invalid key length");
 
         // Zeroize key from memory
         key.zeroize();
@@ -58,8 +57,7 @@ impl EncryptionEngine {
 
     /// Create encryption engine from an existing key
     pub fn from_key(key: &[u8; KEY_SIZE]) -> Result<Self, EncryptionError> {
-        let cipher = Aes256Gcm::new_from_slice(key)
-            .map_err(|_| EncryptionError::InvalidKey)?;
+        let cipher = Aes256Gcm::new_from_slice(key).map_err(|_| EncryptionError::InvalidKey)?;
 
         Ok(Self { cipher })
     }
@@ -200,7 +198,9 @@ impl std::fmt::Display for EncryptionError {
             Self::InvalidNonce => write!(f, "Invalid nonce"),
             Self::InvalidCiphertext => write!(f, "Invalid ciphertext"),
             Self::EncryptionFailed => write!(f, "Encryption failed"),
-            Self::DecryptionFailed => write!(f, "Decryption failed - data may be corrupted or tampered"),
+            Self::DecryptionFailed => {
+                write!(f, "Decryption failed - data may be corrupted or tampered")
+            }
             Self::InvalidUtf8 => write!(f, "Decrypted data is not valid UTF-8"),
             Self::SerializationFailed => write!(f, "JSON serialization failed"),
             Self::DeserializationFailed => write!(f, "JSON deserialization failed"),
@@ -219,7 +219,10 @@ pub fn encrypt_with_random_key(plaintext: &str) -> (EncryptedData, [u8; KEY_SIZE
 }
 
 /// Utility function to decrypt with a key
-pub fn decrypt_with_key(encrypted: &EncryptedData, key: &[u8; KEY_SIZE]) -> Result<String, EncryptionError> {
+pub fn decrypt_with_key(
+    encrypted: &EncryptedData,
+    key: &[u8; KEY_SIZE],
+) -> Result<String, EncryptionError> {
     let engine = EncryptionEngine::from_key(key)?;
     engine.decrypt_string(encrypted)
 }

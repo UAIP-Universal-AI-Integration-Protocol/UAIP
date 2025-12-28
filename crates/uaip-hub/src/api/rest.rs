@@ -109,19 +109,13 @@ pub fn create_router(state: Arc<AppState>) -> Router {
             post(handlers::ai::register_ai_agent),
         )
         .route("/api/v1/ai/agents", get(handlers::ai::list_ai_agents))
-        .route(
-            "/api/v1/ai/sessions",
-            post(handlers::ai::create_ai_session),
-        )
+        .route("/api/v1/ai/sessions", post(handlers::ai::create_ai_session))
         .route(
             "/api/v1/ai/sessions/:session_id",
             get(handlers::ai::get_ai_session),
         )
         // Media Management
-        .route(
-            "/api/v1/media/upload",
-            post(handlers::media::upload_media),
-        )
+        .route("/api/v1/media/upload", post(handlers::media::upload_media))
         .route("/api/v1/media", get(handlers::media::list_media))
         .route("/api/v1/media/:id", get(handlers::media::get_media))
         .route("/api/v1/media/:id", delete(handlers::media::delete_media))

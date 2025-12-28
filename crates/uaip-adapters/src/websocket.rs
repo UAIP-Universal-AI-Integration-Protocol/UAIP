@@ -9,7 +9,7 @@ use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::{mpsc, RwLock};
 use tokio::time::{interval, sleep};
-use tokio_tungstenite::{connect_async, tungstenite::Message, WebSocketStream, MaybeTlsStream};
+use tokio_tungstenite::{connect_async, tungstenite::Message, MaybeTlsStream, WebSocketStream};
 use tracing::{debug, error, info, warn};
 
 use uaip_core::{
@@ -122,9 +122,9 @@ impl WebSocketAdapter {
     pub async fn connect(&mut self) -> Result<()> {
         *self.state.write().await = ConnectionState::Connecting;
 
-        let (ws_stream, _) = connect_async(&self.config.url)
-            .await
-            .map_err(|e| UaipError::ConnectionError(format!("WebSocket connection failed: {}", e)))?;
+        let (ws_stream, _) = connect_async(&self.config.url).await.map_err(|e| {
+            UaipError::ConnectionError(format!("WebSocket connection failed: {}", e))
+        })?;
 
         info!("WebSocket connected to {}", self.config.url);
         *self.state.write().await = ConnectionState::Connected;
@@ -221,10 +221,7 @@ impl WebSocketAdapter {
     }
 
     /// Handle incoming message
-    async fn handle_message(
-        msg: WsMessage,
-        handler: &Arc<RwLock<Option<MessageHandler>>>,
-    ) {
+    async fn handle_message(msg: WsMessage, handler: &Arc<RwLock<Option<MessageHandler>>>) {
         let handler_lock = handler.read().await;
         if let Some(h) = handler_lock.as_ref() {
             if let Err(e) = h(msg) {
@@ -261,8 +258,9 @@ impl WebSocketAdapter {
 
     /// Send UAIP message
     pub async fn send_uaip_message(&self, message: &UaipMessage) -> Result<()> {
-        let json = serde_json::to_string(message)
-            .map_err(|e| UaipError::InvalidMessage(format!("Failed to serialize message: {}", e)))?;
+        let json = serde_json::to_string(message).map_err(|e| {
+            UaipError::InvalidMessage(format!("Failed to serialize message: {}", e))
+        })?;
         self.send_text(json).await
     }
 

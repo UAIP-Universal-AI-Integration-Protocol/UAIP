@@ -116,7 +116,6 @@ pub async fn upload_media(
 
     // Store in database if available
     if let Some(pool) = &state.db_pool {
-
         match sqlx::query(
             r#"
             INSERT INTO media_files (
@@ -405,10 +404,7 @@ pub async fn create_stream_session(
     State(state): State<Arc<AppState>>,
     Json(request): Json<CreateStreamRequest>,
 ) -> ApiResult<Json<StreamSessionResponse>> {
-    info!(
-        "Creating streaming session for media: {}",
-        request.media_id
-    );
+    info!("Creating streaming session for media: {}", request.media_id);
 
     let session_id = Uuid::new_v4();
     let quality = request.quality.unwrap_or(StreamQuality::Auto);

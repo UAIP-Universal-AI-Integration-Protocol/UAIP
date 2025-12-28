@@ -63,10 +63,9 @@ impl Default for NetworkConfig {
 impl NetworkConfig {
     /// Get service address
     pub fn get_service_addr(&self, service: &str) -> Result<SocketAddr> {
-        let config = self
-            .services
-            .get(service)
-            .ok_or_else(|| UaipError::InvalidConfiguration(format!("Service {} not found", service)))?;
+        let config = self.services.get(service).ok_or_else(|| {
+            UaipError::InvalidConfiguration(format!("Service {} not found", service))
+        })?;
 
         config.socket_addr()
     }
@@ -232,7 +231,10 @@ impl AdapterEndpoint {
     /// Create an OPC UA endpoint
     pub fn opcua(url: &str, username: Option<String>, password: Option<String>) -> Self {
         let auth = if let (Some(u), Some(p)) = (username, password) {
-            Some(AuthConfig::UsernamePassword { username: u, password: p })
+            Some(AuthConfig::UsernamePassword {
+                username: u,
+                password: p,
+            })
         } else {
             None
         };
@@ -275,21 +277,10 @@ impl AdapterEndpoint {
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum AuthConfig {
     None,
-    UsernamePassword {
-        username: String,
-        password: String,
-    },
-    Token {
-        token: String,
-    },
-    ApiKey {
-        key: String,
-        header: String,
-    },
-    Certificate {
-        cert_path: String,
-        key_path: String,
-    },
+    UsernamePassword { username: String, password: String },
+    Token { token: String },
+    ApiKey { key: String, header: String },
+    Certificate { cert_path: String, key_path: String },
 }
 
 /// Service discovery configuration

@@ -117,10 +117,9 @@ impl MqttAdapter {
 
     /// Subscribe to a topic
     pub async fn subscribe(&self, topic: &str, qos: QoS) -> Result<()> {
-        self.client
-            .subscribe(topic, qos)
-            .await
-            .map_err(|e| UaipError::ConnectionError(format!("Failed to subscribe to {}: {}", topic, e)))?;
+        self.client.subscribe(topic, qos).await.map_err(|e| {
+            UaipError::ConnectionError(format!("Failed to subscribe to {}: {}", topic, e))
+        })?;
 
         // Track subscription
         let mut subs = self.subscriptions.write().await;
@@ -145,10 +144,9 @@ impl MqttAdapter {
 
     /// Unsubscribe from a topic
     pub async fn unsubscribe(&self, topic: &str) -> Result<()> {
-        self.client
-            .unsubscribe(topic)
-            .await
-            .map_err(|e| UaipError::ConnectionError(format!("Failed to unsubscribe from {}: {}", topic, e)))?;
+        self.client.unsubscribe(topic).await.map_err(|e| {
+            UaipError::ConnectionError(format!("Failed to unsubscribe from {}: {}", topic, e))
+        })?;
 
         // Remove from tracking
         let mut subs = self.subscriptions.write().await;
@@ -159,11 +157,19 @@ impl MqttAdapter {
     }
 
     /// Publish a message to a topic
-    pub async fn publish(&self, topic: &str, payload: Vec<u8>, qos: QoS, retain: bool) -> Result<()> {
+    pub async fn publish(
+        &self,
+        topic: &str,
+        payload: Vec<u8>,
+        qos: QoS,
+        retain: bool,
+    ) -> Result<()> {
         self.client
             .publish(topic, qos, retain, payload.clone())
             .await
-            .map_err(|e| UaipError::ConnectionError(format!("Failed to publish to {}: {}", topic, e)))?;
+            .map_err(|e| {
+                UaipError::ConnectionError(format!("Failed to publish to {}: {}", topic, e))
+            })?;
 
         debug!(
             "Published message to topic: {} (QoS {:?}, retain: {}, size: {} bytes)",
@@ -176,9 +182,15 @@ impl MqttAdapter {
     }
 
     /// Publish a UAIP message
-    pub async fn publish_uaip_message(&self, topic: &str, message: &UaipMessage, qos: QoS) -> Result<()> {
-        let payload = serde_json::to_vec(message)
-            .map_err(|e| UaipError::InvalidMessage(format!("Failed to serialize message: {}", e)))?;
+    pub async fn publish_uaip_message(
+        &self,
+        topic: &str,
+        message: &UaipMessage,
+        qos: QoS,
+    ) -> Result<()> {
+        let payload = serde_json::to_vec(message).map_err(|e| {
+            UaipError::InvalidMessage(format!("Failed to serialize message: {}", e))
+        })?;
 
         self.publish(topic, payload, qos, false).await
     }

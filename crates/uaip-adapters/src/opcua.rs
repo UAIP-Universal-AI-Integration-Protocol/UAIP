@@ -8,9 +8,7 @@ use std::fmt;
 use std::time::Duration;
 use tracing::{debug, info};
 
-use uaip_core::{
-    error::{Result, UaipError},
-};
+use uaip_core::error::{Result, UaipError};
 
 /// OPC UA security mode
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -216,7 +214,10 @@ impl OpcUaAdapter {
         self.session_id = Some(format!("session-{}", uuid::Uuid::new_v4()));
         self.connected = true;
 
-        info!("Connected to OPC UA server (session: {})", self.session_id.as_ref().unwrap());
+        info!(
+            "Connected to OPC UA server (session: {})",
+            self.session_id.as_ref().unwrap()
+        );
         Ok(())
     }
 

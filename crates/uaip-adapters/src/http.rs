@@ -73,14 +73,9 @@ impl Default for HttpConfig {
 #[serde(tag = "type", rename_all = "lowercase")]
 pub enum HttpAuth {
     /// Basic authentication
-    Basic {
-        username: String,
-        password: String,
-    },
+    Basic { username: String, password: String },
     /// Bearer token authentication
-    Bearer {
-        token: String,
-    },
+    Bearer { token: String },
     /// API key authentication
     ApiKey {
         header_name: String,
@@ -105,23 +100,23 @@ impl HttpAdapter {
         // Add default headers
         let mut headers = reqwest::header::HeaderMap::new();
         for (key, value) in &config.default_headers {
-            let header_name = reqwest::header::HeaderName::from_bytes(key.as_bytes())
-                .map_err(|e| UaipError::InvalidConfiguration(format!("Invalid header name: {}", e)))?;
-            let header_value = reqwest::header::HeaderValue::from_str(value)
-                .map_err(|e| UaipError::InvalidConfiguration(format!("Invalid header value: {}", e)))?;
+            let header_name =
+                reqwest::header::HeaderName::from_bytes(key.as_bytes()).map_err(|e| {
+                    UaipError::InvalidConfiguration(format!("Invalid header name: {}", e))
+                })?;
+            let header_value = reqwest::header::HeaderValue::from_str(value).map_err(|e| {
+                UaipError::InvalidConfiguration(format!("Invalid header value: {}", e))
+            })?;
             headers.insert(header_name, header_value);
         }
 
         client_builder = client_builder.default_headers(headers);
 
-        let client = client_builder
-            .build()
-            .map_err(|e| UaipError::ConnectionError(format!("Failed to create HTTP client: {}", e)))?;
+        let client = client_builder.build().map_err(|e| {
+            UaipError::ConnectionError(format!("Failed to create HTTP client: {}", e))
+        })?;
 
-        info!(
-            "HTTP adapter created for base URL: {}",
-            config.base_url
-        );
+        info!("HTTP adapter created for base URL: {}", config.base_url);
 
         Ok(Self { client, config })
     }
@@ -164,11 +159,9 @@ impl HttpAdapter {
             }
 
             // Clone the request for retry
-            let req = request
-                .try_clone()
-                .ok_or_else(|| {
-                    UaipError::InternalError("Failed to clone request for retry".to_string())
-                })?;
+            let req = request.try_clone().ok_or_else(|| {
+                UaipError::InternalError("Failed to clone request for retry".to_string())
+            })?;
 
             match req.send().await {
                 Ok(response) => {

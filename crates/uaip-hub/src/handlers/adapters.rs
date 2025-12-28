@@ -3,10 +3,7 @@
 //! REST API endpoints for managing and interacting with protocol adapters
 //! (ModBus, OPC UA, WebRTC, HTTP, MQTT, WebSocket).
 
-use axum::{
-    extract::State,
-    Json,
-};
+use axum::{extract::State, Json};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tracing::{error, info};
@@ -94,10 +91,7 @@ pub async fn list_adapters(
         },
     ];
 
-    Ok(Json(AdapterListResponse {
-        adapters,
-        total: 6,
-    }))
+    Ok(Json(AdapterListResponse { adapters, total: 6 }))
 }
 
 /// Test HTTP adapter connection
@@ -143,7 +137,10 @@ pub async fn test_modbus_adapter(
     State(_state): State<Arc<AppState>>,
     Json(request): Json<ModbusTestRequest>,
 ) -> ApiResult<Json<AdapterTestResponse>> {
-    info!("Testing Modbus adapter connection to: {}", request.server_address);
+    info!(
+        "Testing Modbus adapter connection to: {}",
+        request.server_address
+    );
 
     let config = ModbusConfig {
         server_address: request.server_address.clone(),
@@ -164,7 +161,10 @@ pub async fn test_modbus_adapter(
     match adapter.health_check().await {
         Ok(_) => Ok(Json(AdapterTestResponse {
             success: true,
-            message: format!("Successfully connected to Modbus server {}", request.server_address),
+            message: format!(
+                "Successfully connected to Modbus server {}",
+                request.server_address
+            ),
             details: None,
         })),
         Err(e) => Ok(Json(AdapterTestResponse {
@@ -210,14 +210,21 @@ pub async fn test_opcua_adapter(
     State(_state): State<Arc<AppState>>,
     Json(request): Json<OpcUaTestRequest>,
 ) -> ApiResult<Json<AdapterTestResponse>> {
-    info!("Testing OPC UA adapter connection to: {}", request.endpoint_url);
+    info!(
+        "Testing OPC UA adapter connection to: {}",
+        request.endpoint_url
+    );
 
     let config = OpcUaConfig {
         endpoint_url: request.endpoint_url.clone(),
         application_name: "UAIP Hub".to_string(),
         application_uri: "urn:uaip:hub".to_string(),
-        security_mode: request.security_mode.unwrap_or(uaip_adapters::opcua::SecurityMode::None),
-        security_policy: request.security_policy.unwrap_or(uaip_adapters::opcua::SecurityPolicy::None),
+        security_mode: request
+            .security_mode
+            .unwrap_or(uaip_adapters::opcua::SecurityMode::None),
+        security_policy: request
+            .security_policy
+            .unwrap_or(uaip_adapters::opcua::SecurityPolicy::None),
         username: request.username,
         password: request.password,
         connection_timeout: 10,
@@ -236,7 +243,10 @@ pub async fn test_opcua_adapter(
     match adapter.health_check().await {
         Ok(_) => Ok(Json(AdapterTestResponse {
             success: true,
-            message: format!("Successfully connected to OPC UA server {}", request.endpoint_url),
+            message: format!(
+                "Successfully connected to OPC UA server {}",
+                request.endpoint_url
+            ),
             details: adapter.get_session_id().map(|s| s.to_string()),
         })),
         Err(e) => Ok(Json(AdapterTestResponse {
@@ -274,9 +284,8 @@ pub async fn read_opcua_node(
 
     let mut adapter = OpcUaAdapter::new(config).map_err(ApiError::from)?;
 
-    let node_id = NodeId::from_string(&request.node_id).map_err(|e| {
-        ApiError::bad_request(format!("Invalid node ID format: {}", e))
-    })?;
+    let node_id = NodeId::from_string(&request.node_id)
+        .map_err(|e| ApiError::bad_request(format!("Invalid node ID format: {}", e)))?;
 
     let data_value = adapter.read_node(&node_id).await.map_err(ApiError::from)?;
 
@@ -297,15 +306,15 @@ pub async fn create_webrtc_offer(
     info!("Creating WebRTC offer");
 
     let config = WebRtcConfig {
-        ice_servers: request.ice_servers.unwrap_or_else(|| {
-            uaip_adapters::webrtc::IceServer::google_stun()
-        }),
+        ice_servers: request
+            .ice_servers
+            .unwrap_or_else(|| uaip_adapters::webrtc::IceServer::google_stun()),
         enable_audio: request.enable_audio.unwrap_or(false),
         enable_video: request.enable_video.unwrap_or(false),
         enable_data_channels: request.enable_data_channels.unwrap_or(true),
-        data_channels: request.data_channels.unwrap_or_else(|| {
-            vec![DataChannelConfig::default()]
-        }),
+        data_channels: request
+            .data_channels
+            .unwrap_or_else(|| vec![DataChannelConfig::default()]),
         connection_timeout: 30,
     };
 
