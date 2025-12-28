@@ -523,7 +523,7 @@ mod tests {
     fn test_media_request_deserialize() {
         let json = r#"{
             "filename": "test.mp4",
-            "media_type": "Video",
+            "media_type": "video",
             "format": "mp4",
             "mime_type": "video/mp4",
             "size_bytes": 1024000,
