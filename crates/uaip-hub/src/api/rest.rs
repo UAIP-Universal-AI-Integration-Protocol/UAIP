@@ -77,6 +77,32 @@ pub fn create_router(state: Arc<AppState>) -> Router {
             "/api/v1/devices/:id/command",
             post(handlers::devices::send_command),
         )
+        // Protocol Adapters
+        .route("/api/v1/adapters", get(handlers::adapters::list_adapters))
+        .route(
+            "/api/v1/adapters/http/test",
+            post(handlers::adapters::test_http_adapter),
+        )
+        .route(
+            "/api/v1/adapters/modbus/test",
+            post(handlers::adapters::test_modbus_adapter),
+        )
+        .route(
+            "/api/v1/adapters/modbus/read",
+            post(handlers::adapters::read_modbus_registers),
+        )
+        .route(
+            "/api/v1/adapters/opcua/test",
+            post(handlers::adapters::test_opcua_adapter),
+        )
+        .route(
+            "/api/v1/adapters/opcua/read",
+            post(handlers::adapters::read_opcua_node),
+        )
+        .route(
+            "/api/v1/adapters/webrtc/offer",
+            post(handlers::adapters::create_webrtc_offer),
+        )
         // WebSocket
         .route("/ws", get(websocket::ws_handler))
         .layer(
@@ -191,6 +217,13 @@ impl IntoResponse for ApiError {
 impl From<UaipError> for ApiError {
     fn from(error: UaipError) -> Self {
         ApiError(error)
+    }
+}
+
+impl ApiError {
+    /// Create a bad request error
+    pub fn bad_request(message: String) -> Self {
+        ApiError(UaipError::InvalidParameter(message))
     }
 }
 

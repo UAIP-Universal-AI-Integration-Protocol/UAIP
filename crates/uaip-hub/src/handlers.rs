@@ -3,6 +3,7 @@
 use axum::{Extension, Json};
 use std::sync::Arc;
 
+pub mod adapters;
 pub mod auth;
 pub mod commands;
 pub mod devices;
