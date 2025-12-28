@@ -8,7 +8,8 @@
 **The Enterprise-Grade IoT & AI Integration Platform**
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/Tests-159%2F159-brightgreen.svg)](#test-coverage)
+[![CI](https://github.com/UAIP-Universal-AI-Integration-Protocol/UAIP/workflows/CI/badge.svg)](https://github.com/UAIP-Universal-AI-Integration-Protocol/UAIP/actions)
+[![Tests](https://img.shields.io/badge/Tests-229%20Passing-brightgreen.svg)](#test-coverage)
 [![Rust](https://img.shields.io/badge/Rust-1.70%2B-orange.svg)](https://www.rust-lang.org)
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](docker-compose.dev.yml)
 [![Status](https://img.shields.io/badge/Status-Production%20Ready-success.svg)](#project-status)
@@ -27,12 +28,14 @@
 
 ### Why UAIP?
 
-- 🚀 **Production Ready**: 159 tests, zero warnings, battle-tested code
+- 🚀 **Production Ready**: 229 tests passing, zero warnings, battle-tested code
 - 🔒 **Security First**: TLS 1.3, JWT, X.509, AES-256-GCM encryption
 - ⚡ **High Performance**: Rust-powered, async/await, horizontal scaling
 - 🎯 **Developer Friendly**: 5-minute setup, comprehensive docs, Docker ready
 - 🔧 **Complete Solution**: Authentication, routing, orchestration, monitoring
 - 📊 **Observable**: Built-in Prometheus metrics, Grafana dashboards
+- 🤖 **AI-Native**: Built-in AI agent management and session orchestration
+- 🎥 **Media Streaming**: Video/audio streaming with HLS, DASH, WebRTC support
 
 ---
 
@@ -44,17 +47,31 @@
 - **AES-256-GCM Encryption**: Authenticated encryption for sensitive data
 - **TLS 1.3**: Modern, secure transport layer
 
-### 🤖 **AI Orchestration**
+### 🤖 **AI Agent Integration**
+- **AI Agent Registry**: Register and manage multiple AI agents
+- **Session Management**: Multi-device AI interaction sessions
+- **Capability Matching**: Dynamic agent-to-device capability matching
+- **Interaction Types**: Query, Command, Subscribe, Configure operations
 - **Rule Engine**: JSON-based automation with 11 operators
 - **Workflow Engine**: State machine for multi-step automation
 - **Scenario Engine**: High-level automation patterns
 - **Priority Queue**: Critical > High > Normal > Low routing
+
+### 🎥 **Media Management**
+- **Multi-Format Support**: Video (MP4, AVI, MKV), Audio (MP3, WAV), Images (JPEG, PNG)
+- **Streaming Protocols**: HLS, DASH, WebRTC, RTMP support
+- **Live Streaming**: Real-time media delivery with session management
+- **Transcoding**: Automated media processing and format conversion
+- **Quality Levels**: Auto, 4K, 1080p, 720p, 480p adaptive streaming
 
 ### 🌐 **Protocol Support**
 - **HTTP/REST**: Full REST API with retry and multiple auth methods
 - **WebSocket**: Real-time bidirectional communication
 - **MQTT**: IoT device communication with QoS 0/1/2
 - **NATS**: High-performance message queue
+- **Modbus TCP**: Industrial automation protocol support
+- **OPC UA**: Unified Architecture for industrial IoT
+- **WebRTC**: Peer-to-peer media streaming and data channels
 
 ### 📡 **Device Management**
 - **Auto Discovery**: Automatic device registration
@@ -285,7 +302,7 @@ uaip-hub/
 ## 🧪 Test Coverage
 
 ```bash
-# Run all tests (159 tests)
+# Run all tests (229 tests)
 make test
 
 # Run specific crate tests
@@ -302,15 +319,23 @@ make format      # rustfmt
 
 | Crate | Tests | Status |
 |-------|-------|--------|
-| uaip-core | 10 | ✅ |
+| uaip-adapters | 44 | ✅ |
 | uaip-auth | 24 | ✅ |
+| uaip-core | 30 | ✅ |
+| uaip-hub | 46 | ✅ |
+| uaip-orchestrator | 35 | ✅ |
 | uaip-registry | 17 | ✅ |
 | uaip-router | 17 | ✅ |
-| uaip-hub | 35 | ✅ |
-| uaip-orchestrator | 23 | ✅ |
-| uaip-adapters | 17 | ✅ |
 | uaip-security | 16 | ✅ |
-| **Total** | **159** | **✅** |
+| **Total** | **229** | **✅** |
+
+All tests passing with comprehensive coverage across:
+- Protocol adapters (HTTP, WebSocket, MQTT, Modbus, OPC UA, WebRTC)
+- AI agent management and session handling
+- Media streaming and processing
+- Authentication and authorization
+- Message routing and QoS
+- Device registry and capabilities
 
 ---
 
@@ -416,8 +441,10 @@ UAIP/
   - Rule Engine (JSON-based automation)
   - Workflow Engine (state machines)
   - Scenario Engine (high-level patterns)
-  - Protocol adapters (HTTP, WebSocket, MQTT)
+  - Protocol adapters (HTTP, WebSocket, MQTT, Modbus, OPC UA, WebRTC)
   - AES-256-GCM encryption module
+  - AI Agent management system
+  - Media streaming (HLS, DASH, WebRTC, RTMP)
 
 ### 🚧 In Progress
 
