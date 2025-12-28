@@ -308,13 +308,11 @@ pub async fn create_webrtc_offer(
     let config = WebRtcConfig {
         ice_servers: request
             .ice_servers
-            .unwrap_or_else(|| uaip_adapters::webrtc::IceServer::google_stun()),
+            .unwrap_or_else(uaip_adapters::webrtc::IceServer::google_stun),
         enable_audio: request.enable_audio.unwrap_or(false),
         enable_video: request.enable_video.unwrap_or(false),
         enable_data_channels: request.enable_data_channels.unwrap_or(true),
-        data_channels: request
-            .data_channels
-            .unwrap_or_else(|| vec![DataChannelConfig::default()]),
+        data_channels: request.data_channels.unwrap_or_default(),
         connection_timeout: 30,
     };
 

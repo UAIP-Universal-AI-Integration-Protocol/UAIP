@@ -201,6 +201,7 @@ impl StreamingStats {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::media::StreamProtocol;
 
     #[test]
     fn test_streaming_session_creation() {

@@ -426,25 +426,37 @@ mod tests {
 
     #[test]
     fn test_ai_agent_capabilities() {
+        use crate::device::CapabilityType;
+
         let mut agent = AiAgent::new("TestAgent".to_string(), AgentType::Control);
-        agent.add_capability(Capability::Sensor);
-        agent.add_capability(Capability::Actuator);
+        let sensor_cap = Capability::new("sensor".to_string(), CapabilityType::Sensor, true);
+        let actuator_cap = Capability::new("actuator".to_string(), CapabilityType::Actuator, true);
+
+        agent.add_capability(sensor_cap.clone());
+        agent.add_capability(actuator_cap.clone());
 
         assert_eq!(agent.supported_capabilities.len(), 2);
-        assert!(agent.supports_capability(&Capability::Sensor));
-        assert!(agent.supports_capability(&Capability::Actuator));
-        assert!(!agent.supports_capability(&Capability::VideoStream));
+        assert!(agent.supports_capability(&sensor_cap));
+        assert!(agent.supports_capability(&actuator_cap));
+
+        let video_cap = Capability::new("video".to_string(), CapabilityType::VideoStream, true);
+        assert!(!agent.supports_capability(&video_cap));
     }
 
     #[test]
     fn test_ai_agent_can_handle_device() {
-        let mut agent = AiAgent::new("TestAgent".to_string(), AgentType::Control);
-        agent.add_capability(Capability::Sensor);
+        use crate::device::CapabilityType;
 
-        let device_caps = vec![Capability::Sensor, Capability::Actuator];
+        let mut agent = AiAgent::new("TestAgent".to_string(), AgentType::Control);
+        let sensor_cap = Capability::new("sensor".to_string(), CapabilityType::Sensor, true);
+        agent.add_capability(sensor_cap.clone());
+
+        let actuator_cap = Capability::new("actuator".to_string(), CapabilityType::Actuator, true);
+        let device_caps = vec![sensor_cap.clone(), actuator_cap];
         assert!(agent.can_handle_device(&device_caps));
 
-        let other_caps = vec![Capability::VideoStream];
+        let video_cap = Capability::new("video".to_string(), CapabilityType::VideoStream, true);
+        let other_caps = vec![video_cap];
         assert!(!agent.can_handle_device(&other_caps));
     }
 

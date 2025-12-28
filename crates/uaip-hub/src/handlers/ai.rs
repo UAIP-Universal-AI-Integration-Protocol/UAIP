@@ -20,7 +20,7 @@ use uaip_core::{
 use crate::api::rest::{ApiResult, AppState};
 
 /// AI Agent Management Endpoints
-
+///
 /// Register a new AI agent
 pub async fn register_ai_agent(
     State(state): State<Arc<AppState>>,
@@ -329,12 +329,15 @@ mod tests {
 
     #[test]
     fn test_register_agent_request() {
+        use uaip_core::device::CapabilityType;
+
+        let sensor_cap = Capability::new("sensor".to_string(), CapabilityType::Sensor, true);
         let request = RegisterAgentRequest {
             name: "TestAgent".to_string(),
             agent_type: AgentType::Conversational,
             version: Some("1.0.0".to_string()),
             provider: Some("Test".to_string()),
-            supported_capabilities: Some(vec![Capability::Sensor]),
+            supported_capabilities: Some(vec![sensor_cap]),
             config: None,
         };
 
