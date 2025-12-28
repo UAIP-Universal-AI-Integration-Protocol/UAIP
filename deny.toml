@@ -7,25 +7,10 @@ all-features = false
 no-default-features = false
 
 [advisories]
-version = 2
 # The path where the advisory database is cloned/fetched into
 db-path = "~/.cargo/advisory-db"
 # The url(s) of the advisory databases to use
 db-urls = ["https://github.com/rustsec/advisory-db"]
-# Vulnerability severity threshold
-# - None: Allow all vulnerabilities
-# - Low: Deny low and above
-# - Medium: Deny medium and above
-# - High: Deny high and above
-# - Critical: Deny only critical
-vulnerability = "deny"
-# Unmaintained crates
-# Note: Commented out due to cargo-deny version compatibility
-# unmaintained = "warn"
-# Yanked crates
-yanked = "deny"
-# Security notices
-notice = "warn"
 # Ignore specific advisories (use with caution!)
 ignore = [
     # RUSTSEC-2023-0071: RSA 0.9.9 - Marvin Attack vulnerability
@@ -35,8 +20,6 @@ ignore = [
 ]
 
 [licenses]
-# Lint level for licenses
-unlicensed = "deny"
 # List of explicitly allowed licenses
 allow = [
     "Apache-2.0",
@@ -48,17 +31,6 @@ allow = [
     "Zlib",
     "Unicode-DFS-2016",
 ]
-# List of explicitly disallowed licenses
-deny = [
-    "GPL-3.0",
-    "AGPL-3.0",
-]
-# Lint level for copyleft licenses
-copyleft = "warn"
-# Blanket approval or denial for OSI-approved or FSF Free/Libre licenses
-allow-osi-fsf-free = "both"
-# Lint level for licenses considered 'non-standard'
-default = "deny"
 # Confidence threshold for license detection (0.0 - 1.0)
 confidence-threshold = 0.8
 
@@ -80,13 +52,7 @@ skip-tree = []
 allow = []
 
 # List of crates that are explicitly banned
-deny = [
-    # Example: Ban a specific crate
-    # { name = "ansi_term", version = "*" },
-]
-
-# List of features that are banned
-features = []
+deny = []
 
 [sources]
 # Lint level for what to happen when a crate from a crate registry that is not in the allow list is encountered
