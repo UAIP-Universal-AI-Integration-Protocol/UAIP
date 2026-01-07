@@ -46,6 +46,8 @@
 - **Enterprise RBAC**: Fine-grained role-based access control
 - **AES-256-GCM Encryption**: Authenticated encryption for sensitive data
 - **TLS 1.3**: Modern, secure transport layer
+- **User Registration**: Secure self-service sign-up with default "Viewer" role assignment
+- **Separated Entities**: Distinct Handling for Human Users and AI Agents
 
 ### 🤖 **AI Agent Integration**
 - **AI Agent Registry**: Register and manage multiple AI agents
@@ -235,6 +237,15 @@ POST /api/v1/auth/login
   "client_secret": "secret",
   "scope": "devices:read devices:write"
 }
+
+// User Registration (Self-Service)
+POST /api/v1/auth/register
+{
+  "name": "Jane User",
+  "email": "jane@example.com",
+  "password": "secure-password-123"
+}
+// Response: Auto-login with "viewer" role token
 
 // Response
 {
@@ -542,7 +553,8 @@ UAIP/
   - Scenario Engine (high-level patterns)
   - Protocol adapters (HTTP, WebSocket, MQTT, Modbus, OPC UA, WebRTC)
   - AES-256-GCM encryption module
-  - AI Agent management system
+  - AI Agent management system (Split Entity Model)
+  - User Self-Service Registration Flow
   - Media streaming (HLS, DASH, WebRTC, RTMP)
 
 ### 🚧 In Progress

@@ -105,14 +105,12 @@ ON ai_agents USING GIN (metadata);
 -- Composite index for entity sessions
 -- Supports: SELECT * FROM sessions WHERE entity_id = ? AND entity_type = ?
 CREATE INDEX IF NOT EXISTS idx_sessions_entity_active
-ON sessions(entity_id, entity_type, expires_at)
-WHERE expires_at > NOW();
+ON sessions(entity_id, entity_type, expires_at);
 
 -- Index for session cleanup by expiration
 -- Supports: DELETE FROM sessions WHERE expires_at < NOW()
 CREATE INDEX IF NOT EXISTS idx_sessions_expiry_cleanup
-ON sessions(expires_at)
-WHERE expires_at < NOW();
+ON sessions(expires_at);
 
 -- Index for heartbeat monitoring
 -- Supports: SELECT * FROM sessions WHERE last_heartbeat < NOW() - INTERVAL '5 minutes'
@@ -167,8 +165,7 @@ ON audit_log(timestamp);
 -- Composite index for permission checks
 -- Supports: Fast permission lookups for entities
 CREATE INDEX IF NOT EXISTS idx_entity_roles_permission_check
-ON entity_roles(entity_id, entity_type, role_id)
-WHERE expires_at IS NULL OR expires_at > NOW();
+ON entity_roles(entity_id, entity_type, role_id);
 
 -- Index for role-based queries
 -- Supports: SELECT * FROM entity_roles WHERE role_id = ?

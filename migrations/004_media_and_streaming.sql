@@ -2,7 +2,7 @@
 -- Adds support for video, audio, image, and document management with streaming capabilities
 
 -- Media Files Table
-CREATE TABLE media_files (
+CREATE TABLE IF NOT EXISTS media_files (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     filename VARCHAR(500) NOT NULL,
     media_type VARCHAR(20) NOT NULL CHECK (media_type IN ('video', 'audio', 'image', 'document')),
@@ -28,15 +28,15 @@ CREATE TABLE media_files (
     uploaded_by_agent UUID REFERENCES ai_agents(id) ON DELETE SET NULL
 );
 
-CREATE INDEX idx_media_files_media_type ON media_files(media_type);
-CREATE INDEX idx_media_files_status ON media_files(status);
-CREATE INDEX idx_media_files_uploaded_at ON media_files(uploaded_at);
-CREATE INDEX idx_media_files_source_device ON media_files(source_device_id);
-CREATE INDEX idx_media_files_tags ON media_files USING GIN(tags);
-CREATE INDEX idx_media_files_metadata ON media_files USING GIN(metadata);
+CREATE INDEX IF NOT EXISTS idx_media_files_media_type ON media_files(media_type);
+CREATE INDEX IF NOT EXISTS idx_media_files_status ON media_files(status);
+CREATE INDEX IF NOT EXISTS idx_media_files_uploaded_at ON media_files(uploaded_at);
+CREATE INDEX IF NOT EXISTS idx_media_files_source_device ON media_files(source_device_id);
+CREATE INDEX IF NOT EXISTS idx_media_files_tags ON media_files USING GIN(tags);
+CREATE INDEX IF NOT EXISTS idx_media_files_metadata ON media_files USING GIN(metadata);
 
 -- Streaming Configurations Table
-CREATE TABLE stream_configs (
+CREATE TABLE IF NOT EXISTS stream_configs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     media_id UUID NOT NULL REFERENCES media_files(id) ON DELETE CASCADE,
     protocol VARCHAR(20) NOT NULL CHECK (protocol IN ('HLS', 'DASH', 'WEBRTC', 'RTMP', 'HTTP')),
@@ -51,12 +51,12 @@ CREATE TABLE stream_configs (
     active BOOLEAN NOT NULL DEFAULT TRUE
 );
 
-CREATE INDEX idx_stream_configs_media_id ON stream_configs(media_id);
-CREATE INDEX idx_stream_configs_protocol ON stream_configs(protocol);
-CREATE INDEX idx_stream_configs_active ON stream_configs(active);
+CREATE INDEX IF NOT EXISTS idx_stream_configs_media_id ON stream_configs(media_id);
+CREATE INDEX IF NOT EXISTS idx_stream_configs_protocol ON stream_configs(protocol);
+CREATE INDEX IF NOT EXISTS idx_stream_configs_active ON stream_configs(active);
 
 -- Media Processing Jobs Table
-CREATE TABLE media_processing_jobs (
+CREATE TABLE IF NOT EXISTS media_processing_jobs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     media_id UUID NOT NULL REFERENCES media_files(id) ON DELETE CASCADE,
     operation_type VARCHAR(50) NOT NULL,
@@ -70,12 +70,12 @@ CREATE TABLE media_processing_jobs (
     output_media_id UUID REFERENCES media_files(id) ON DELETE SET NULL
 );
 
-CREATE INDEX idx_media_jobs_media_id ON media_processing_jobs(media_id);
-CREATE INDEX idx_media_jobs_status ON media_processing_jobs(status);
-CREATE INDEX idx_media_jobs_created_at ON media_processing_jobs(created_at);
+CREATE INDEX IF NOT EXISTS idx_media_jobs_media_id ON media_processing_jobs(media_id);
+CREATE INDEX IF NOT EXISTS idx_media_jobs_status ON media_processing_jobs(status);
+CREATE INDEX IF NOT EXISTS idx_media_jobs_created_at ON media_processing_jobs(created_at);
 
 -- AI Agent Sessions Extended (for media and device interactions)
-CREATE TABLE ai_sessions (
+CREATE TABLE IF NOT EXISTS ai_sessions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     agent_id UUID NOT NULL REFERENCES ai_agents(id) ON DELETE CASCADE,
     state VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (state IN ('active', 'paused', 'terminating', 'terminated', 'error')),
@@ -90,23 +90,23 @@ CREATE TABLE ai_sessions (
     avg_response_time_ms REAL DEFAULT 0.0
 );
 
-CREATE INDEX idx_ai_sessions_agent_id ON ai_sessions(agent_id);
-CREATE INDEX idx_ai_sessions_state ON ai_sessions(state);
-CREATE INDEX idx_ai_sessions_last_activity ON ai_sessions(last_activity_at);
+CREATE INDEX IF NOT EXISTS idx_ai_sessions_agent_id ON ai_sessions(agent_id);
+CREATE INDEX IF NOT EXISTS idx_ai_sessions_state ON ai_sessions(state);
+CREATE INDEX IF NOT EXISTS idx_ai_sessions_last_activity ON ai_sessions(last_activity_at);
 
 -- AI Session Devices (Many-to-Many relationship)
-CREATE TABLE ai_session_devices (
+CREATE TABLE IF NOT EXISTS ai_session_devices (
     session_id UUID NOT NULL REFERENCES ai_sessions(id) ON DELETE CASCADE,
     device_id UUID NOT NULL REFERENCES devices(id) ON DELETE CASCADE,
     added_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     PRIMARY KEY (session_id, device_id)
 );
 
-CREATE INDEX idx_ai_session_devices_session ON ai_session_devices(session_id);
-CREATE INDEX idx_ai_session_devices_device ON ai_session_devices(device_id);
+CREATE INDEX IF NOT EXISTS idx_ai_session_devices_session ON ai_session_devices(session_id);
+CREATE INDEX IF NOT EXISTS idx_ai_session_devices_device ON ai_session_devices(device_id);
 
 -- Network Endpoints Configuration
-CREATE TABLE network_endpoints (
+CREATE TABLE IF NOT EXISTS network_endpoints (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(255) UNIQUE NOT NULL,
     endpoint_type VARCHAR(50) NOT NULL,
@@ -126,13 +126,13 @@ CREATE TABLE network_endpoints (
     health_status VARCHAR(20) DEFAULT 'unknown' CHECK (health_status IN ('healthy', 'degraded', 'unhealthy', 'unknown'))
 );
 
-CREATE INDEX idx_network_endpoints_name ON network_endpoints(name);
-CREATE INDEX idx_network_endpoints_type ON network_endpoints(endpoint_type);
-CREATE INDEX idx_network_endpoints_enabled ON network_endpoints(enabled);
-CREATE INDEX idx_network_endpoints_health ON network_endpoints(health_status);
+CREATE INDEX IF NOT EXISTS idx_network_endpoints_name ON network_endpoints(name);
+CREATE INDEX IF NOT EXISTS idx_network_endpoints_type ON network_endpoints(endpoint_type);
+CREATE INDEX IF NOT EXISTS idx_network_endpoints_enabled ON network_endpoints(enabled);
+CREATE INDEX IF NOT EXISTS idx_network_endpoints_health ON network_endpoints(health_status);
 
 -- Orchestration Rules (extending automation capabilities)
-CREATE TABLE orchestration_rules (
+CREATE TABLE IF NOT EXISTS orchestration_rules (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(255) NOT NULL,
     description TEXT,
@@ -148,12 +148,12 @@ CREATE TABLE orchestration_rules (
     created_by_agent UUID REFERENCES ai_agents(id) ON DELETE SET NULL
 );
 
-CREATE INDEX idx_orchestration_rules_enabled ON orchestration_rules(enabled);
-CREATE INDEX idx_orchestration_rules_priority ON orchestration_rules(priority DESC);
-CREATE INDEX idx_orchestration_rules_created_by ON orchestration_rules(created_by_agent);
+CREATE INDEX IF NOT EXISTS idx_orchestration_rules_enabled ON orchestration_rules(enabled);
+CREATE INDEX IF NOT EXISTS idx_orchestration_rules_priority ON orchestration_rules(priority DESC);
+CREATE INDEX IF NOT EXISTS idx_orchestration_rules_created_by ON orchestration_rules(created_by_agent);
 
 -- Workflows (for complex multi-step automations)
-CREATE TABLE workflows (
+CREATE TABLE IF NOT EXISTS workflows (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(255) NOT NULL,
     description TEXT,
@@ -168,9 +168,9 @@ CREATE TABLE workflows (
     execution_context JSONB DEFAULT '{}'
 );
 
-CREATE INDEX idx_workflows_state ON workflows(state);
-CREATE INDEX idx_workflows_enabled ON workflows(enabled);
-CREATE INDEX idx_workflows_created_by ON workflows(created_by_agent);
+CREATE INDEX IF NOT EXISTS idx_workflows_state ON workflows(state);
+CREATE INDEX IF NOT EXISTS idx_workflows_enabled ON workflows(enabled);
+CREATE INDEX IF NOT EXISTS idx_workflows_created_by ON workflows(created_by_agent);
 
 -- Function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -182,16 +182,19 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Triggers for updated_at
+DROP TRIGGER IF EXISTS trg_stream_configs_updated_at ON stream_configs;
 CREATE TRIGGER trg_stream_configs_updated_at
     BEFORE UPDATE ON stream_configs
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS trg_network_endpoints_updated_at ON network_endpoints;
 CREATE TRIGGER trg_network_endpoints_updated_at
     BEFORE UPDATE ON network_endpoints
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS trg_orchestration_rules_updated_at ON orchestration_rules;
 CREATE TRIGGER trg_orchestration_rules_updated_at
     BEFORE UPDATE ON orchestration_rules
     FOR EACH ROW

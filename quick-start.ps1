@@ -12,32 +12,7 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 
-Write-Host "Waiting for PostgreSQL to be ready..." -ForegroundColor Cyan
-Start-Sleep -Seconds 5
-
-# Run database migrations
-Write-Host "Running database migrations..." -ForegroundColor Cyan
-
-$migrations = @(
-    "migrations/001_initial_schema.sql",
-    "migrations/002_rbac_tables.sql",
-    "migrations/003_performance_indexes.sql",
-    "migrations/004_media_and_streaming.sql"
-)
-
-foreach ($migration in $migrations) {
-    if (Test-Path $migration) {
-        Write-Host "  -> Applying $migration" -ForegroundColor Gray
-        Get-Content $migration | docker exec -i uaip-postgres psql -U uaip -d uaip
-        if ($LASTEXITCODE -ne 0) {
-            Write-Host "Failed to apply migration: $migration" -ForegroundColor Red
-            exit 1
-        }
-    }
-}
-
-Write-Host ""
-Write-Host "UAIP Hub is ready!" -ForegroundColor Green
+Write-Host "Services started! Schema will be managed by UAIP Hub." -ForegroundColor Green
 Write-Host ""
 Write-Host "Services available at:" -ForegroundColor Yellow
 Write-Host "  UAIP Hub API:  http://localhost:8443" -ForegroundColor White

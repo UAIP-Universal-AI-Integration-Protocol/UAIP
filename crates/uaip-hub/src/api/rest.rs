@@ -67,6 +67,15 @@ pub fn create_router(state: Arc<AppState>) -> Router {
         .route("/metrics", get(handlers::metrics::metrics_handler))
         // Authentication
         .route("/api/v1/auth/login", post(handlers::auth::login))
+        .route("/api/v1/auth/register", post(handlers::auth::register))
+        .route("/api/v1/auth/change-password", post(handlers::auth::change_password))
+        // User Management
+        .route("/api/v1/users", get(handlers::users::list_users))
+        .route("/api/v1/users/register", post(handlers::users::create_user))
+        .route("/api/v1/users/:id", delete(handlers::users::delete_user))
+        .route("/api/v1/users/:id", axum::routing::put(handlers::users::update_user))
+        .route("/api/v1/users/:id/password", axum::routing::put(handlers::users::admin_reset_password))
+        .route("/api/v1/users/:id/status", post(handlers::users::update_user_status))
         // Devices
         .route("/api/v1/devices", get(handlers::devices::list_devices))
         .route(
@@ -155,6 +164,14 @@ pub struct LoginRequest {
     pub scope: Option<String>,
 }
 
+/// Registration request
+#[derive(Debug, Deserialize)]
+pub struct RegisterRequest {
+    pub name: String,
+    pub email: String,
+    pub password: String,
+}
+
 /// Login response
 #[derive(Debug, Serialize)]
 pub struct LoginResponse {
@@ -164,6 +181,7 @@ pub struct LoginResponse {
     pub scope: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub refresh_token: Option<String>,
+    pub require_password_change: bool,
 }
 
 /// Device registration request

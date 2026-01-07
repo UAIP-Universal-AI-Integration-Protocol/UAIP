@@ -12,6 +12,7 @@ use std::sync::Arc;
 use tracing::{error, info};
 use uuid::Uuid;
 
+
 use uaip_core::{
     ai_agent::{AgentConfig, AgentType, AiAgent, AiSession, InteractionType, SessionState},
     device::{Capability, DeviceId},
@@ -27,6 +28,9 @@ pub async fn register_ai_agent(
     Json(request): Json<RegisterAgentRequest>,
 ) -> ApiResult<Json<AgentResponse>> {
     info!("Registering AI agent: {}", request.name);
+
+    // Validate: (Removed check for AgentType::Human as it is not a variant of AgentType enum)
+    // The type system ensures strictly valid AgentType values are deserialized.
 
     // Create agent
     let mut agent = AiAgent::new(request.name.clone(), request.agent_type);
@@ -97,7 +101,7 @@ pub async fn list_ai_agents(
     if let Some(pool) = &state.db_pool {
         match sqlx::query(
             r#"
-            SELECT id, name, agent_type, version, provider, created_at
+            SELECT id, name, agent_type, version, provider, scopes, created_at
             FROM ai_agents
             ORDER BY created_at DESC
             "#,
@@ -112,6 +116,7 @@ pub async fn list_ai_agents(
                     let agent_type_str: String = record.try_get("agent_type").unwrap_or_default();
                     let version: String = record.try_get("version").unwrap_or_default();
                     let provider: String = record.try_get("provider").unwrap_or_default();
+                    let scopes: Vec<String> = record.try_get("scopes").unwrap_or_default();
                     let created_at: chrono::NaiveDateTime =
                         record.try_get("created_at").unwrap_or_default();
 
@@ -133,6 +138,7 @@ pub async fn list_ai_agents(
                         agent_type,
                         version,
                         provider,
+                        scopes,
                         registered_at: created_at.and_utc(),
                     });
                 }
@@ -270,6 +276,7 @@ pub struct AgentSummary {
     pub agent_type: AgentType,
     pub version: String,
     pub provider: String,
+    pub scopes: Vec<String>,
     pub registered_at: chrono::DateTime<chrono::Utc>,
 }
 

@@ -10,6 +10,7 @@ pub mod commands;
 pub mod devices;
 pub mod media;
 pub mod metrics;
+pub mod users;
 
 use crate::health::{HealthCheckResponse, HealthChecker};
 

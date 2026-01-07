@@ -47,6 +47,14 @@ async fn main() -> Result<()> {
             {
                 Ok(pool) => {
                     tracing::info!("PostgreSQL connection established");
+                    
+                    // Run migrations
+                    tracing::info!("Running database migrations...");
+                    match sqlx::migrate!("../../migrations").run(&pool).await {
+                        Ok(_) => tracing::info!("Migrations applied successfully"),
+                        Err(e) => tracing::error!("Failed to apply migrations: {}", e),
+                    }
+                    
                     Some(pool)
                 }
                 Err(e) => {

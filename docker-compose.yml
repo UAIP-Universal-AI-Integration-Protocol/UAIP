@@ -29,7 +29,7 @@ services:
     container_name: uaip-redis
     command: redis-server --appendonly yes --requirepass uaip_redis_dev
     ports:
-      - "6379:6379"
+      - "6380:6379"
     volumes:
       - redis_data:/data
     healthcheck:

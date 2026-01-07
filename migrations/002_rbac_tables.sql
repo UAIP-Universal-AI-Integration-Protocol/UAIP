@@ -2,7 +2,7 @@
 -- Role-Based Access Control for fine-grained permissions
 
 -- Roles Table
-CREATE TABLE roles (
+CREATE TABLE IF NOT EXISTS roles (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(100) UNIQUE NOT NULL,
     description TEXT,
@@ -11,7 +11,7 @@ CREATE TABLE roles (
 );
 
 -- Permissions Table
-CREATE TABLE permissions (
+CREATE TABLE IF NOT EXISTS permissions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     resource VARCHAR(100) NOT NULL,
     action VARCHAR(100) NOT NULL,
@@ -21,7 +21,7 @@ CREATE TABLE permissions (
 );
 
 -- Role Permissions (many-to-many)
-CREATE TABLE role_permissions (
+CREATE TABLE IF NOT EXISTS role_permissions (
     role_id UUID REFERENCES roles(id) ON DELETE CASCADE,
     permission_id UUID REFERENCES permissions(id) ON DELETE CASCADE,
     granted_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -29,7 +29,7 @@ CREATE TABLE role_permissions (
 );
 
 -- Entity Role Assignments (for both devices and AI agents)
-CREATE TABLE entity_roles (
+CREATE TABLE IF NOT EXISTS entity_roles (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     entity_id UUID NOT NULL,
     entity_type VARCHAR(20) NOT NULL CHECK (entity_type IN ('device', 'ai_agent')),
@@ -40,9 +40,9 @@ CREATE TABLE entity_roles (
     UNIQUE(entity_id, entity_type, role_id)
 );
 
-CREATE INDEX idx_entity_roles_entity ON entity_roles(entity_id, entity_type);
-CREATE INDEX idx_entity_roles_role ON entity_roles(role_id);
-CREATE INDEX idx_entity_roles_expires_at ON entity_roles(expires_at);
+CREATE INDEX IF NOT EXISTS idx_entity_roles_entity ON entity_roles(entity_id, entity_type);
+CREATE INDEX IF NOT EXISTS idx_entity_roles_role ON entity_roles(role_id);
+CREATE INDEX IF NOT EXISTS idx_entity_roles_expires_at ON entity_roles(expires_at);
 
 -- Insert default roles
 INSERT INTO roles (name, description) VALUES
@@ -50,7 +50,8 @@ INSERT INTO roles (name, description) VALUES
     ('device_manager', 'Can manage all devices - create, read, update, delete'),
     ('device_operator', 'Can operate devices - read and execute commands'),
     ('monitor', 'Read-only access to devices and telemetry'),
-    ('ai_agent', 'Standard AI agent permissions - read devices, execute commands, subscribe to events');
+    ('ai_agent', 'Standard AI agent permissions - read devices, execute commands, subscribe to events')
+ON CONFLICT (name) DO NOTHING;
 
 -- Insert default permissions
 INSERT INTO permissions (resource, action, description) VALUES
@@ -65,7 +66,8 @@ INSERT INTO permissions (resource, action, description) VALUES
     ('event', 'subscribe', 'Subscribe to events'),
     ('event', 'publish', 'Publish events'),
     ('system', 'configure', 'Configure system settings'),
-    ('user', 'manage', 'Manage users and agents');
+    ('user', 'manage', 'Manage users and agents')
+ON CONFLICT (resource, action) DO NOTHING;
 
 -- Assign permissions to roles
 
@@ -74,7 +76,8 @@ INSERT INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id
 FROM roles r
 CROSS JOIN permissions p
-WHERE r.name = 'admin' AND p.resource = '*' AND p.action = '*';
+WHERE r.name = 'admin' AND p.resource = '*' AND p.action = '*'
+ON CONFLICT DO NOTHING;
 
 -- Device Manager: full device management
 INSERT INTO role_permissions (role_id, permission_id)
@@ -86,7 +89,8 @@ AND (
     (p.resource = 'device' AND p.action IN ('read', 'write', 'execute', 'delete'))
     OR (p.resource = 'telemetry' AND p.action = 'read')
     OR (p.resource = 'command' AND p.action = 'execute')
-);
+)
+ON CONFLICT DO NOTHING;
 
 -- Device Operator: operate devices
 INSERT INTO role_permissions (role_id, permission_id)
@@ -98,7 +102,8 @@ AND (
     (p.resource = 'device' AND p.action IN ('read', 'execute'))
     OR (p.resource = 'telemetry' AND p.action = 'read')
     OR (p.resource = 'command' AND p.action = 'execute')
-);
+)
+ON CONFLICT DO NOTHING;
 
 -- Monitor: read-only
 INSERT INTO role_permissions (role_id, permission_id)
@@ -109,7 +114,8 @@ WHERE r.name = 'monitor'
 AND (
     (p.resource = 'device' AND p.action = 'read')
     OR (p.resource = 'telemetry' AND p.action = 'read')
-);
+)
+ON CONFLICT DO NOTHING;
 
 -- AI Agent: typical AI agent permissions
 INSERT INTO role_permissions (role_id, permission_id)
@@ -122,7 +128,8 @@ AND (
     OR (p.resource = 'telemetry' AND p.action = 'read')
     OR (p.resource = 'command' AND p.action = 'execute')
     OR (p.resource = 'event' AND p.action = 'subscribe')
-);
+)
+ON CONFLICT DO NOTHING;
 
 -- Function to check if entity has permission
 CREATE OR REPLACE FUNCTION has_permission(
